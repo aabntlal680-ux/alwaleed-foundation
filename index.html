@@ -1810,5 +1810,28 @@ document.addEventListener("DOMContentLoaded", function() {
         window.onload = runCounters;
     </script>
 
+    <script>
+        const items = document.querySelectorAll('.ap-carousel-item');
+const dots = document.querySelectorAll('.dot');
+let currentIndex = 0;
+
+function showSlide(index) {
+    items.forEach(item => item.classList.remove('active'));
+    dots.forEach(dot => dot.classList.remove('active'));
+    
+    items[index].classList.add('active');
+    dots[index].classList.add('active');
+}
+
+function nextSlide() {
+    currentIndex = (currentIndex + 1) % items.length;
+    showSlide(currentIndex);
+}
+
+// تغيير الشريحة كل 3 ثوانٍ
+setInterval(nextSlide, 3000);
+
+    </script>
+
     </body>
 </html>
