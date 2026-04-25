@@ -123,8 +123,8 @@
         .projects-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr); 
-            gap: 25px; /* المسافة بين البطاقات */
-            padding: 20px;
+            gap: 20px; /* المسافة بين البطاقات */
+            padding: 15px;
             width: 90%;
             margin: 0 auto; /* توسيط الشبكة في منتصف الصفحة */
         }
@@ -162,7 +162,7 @@
         }
 
         .project-image {
-            height: 180px;
+            height: 250px;
             width: 100%;
             background-size: contain;
             background-repeat: no-repeat            
@@ -192,7 +192,7 @@
         /* هذا الكود يطبق فقط على الشاشات الصغيرة (الهواتف) */
     @media (max-width: 768px) {
         .project-image {
-            height: 200px; /* يمكننا زيادة الارتفاع قليلاً في الهاتف ليصبح أوضح */
+            height: 250px; /* يمكننا زيادة الارتفاع قليلاً في الهاتف ليصبح أوضح */
         }
 
     /* إلغاء تأثير التكبير في الهاتف لأنه قد يسبب إرباكاً عند اللمس */
@@ -208,19 +208,21 @@
 
 
         .project-content {
-            padding: 10px 15px;
+            padding: 20px 15px;
             background-color: green;
             border-radius: 0 0 15px 15px;
             display: flex;
             flex-direction: column;
             gap: 5px;
+            height: auto;
             max-height: 80px;
-            overflow: hidden;
+            overflow: visibie;
             opacity: 0.5;
+            justify-content: center;
         }
 
         .project-category {
-            color: var(--gold);
+            color: black;
             font-size: 0.7rem;
             font-weight: bold;
             margin-bottom: 2px;
@@ -229,9 +231,9 @@
         .project-title {
             font-size: 0.9rem;
             font-weight: blod;
-            color: var(--dark-blue);
+            color: #ffffff;
             margin-bottom: 0;
-            height: 50px;
+            height: 55px;
         }
         
         .hr {
@@ -292,10 +294,6 @@
     </style>
 </head>
 <body>
-    
-    <button onclick="toggleWhatsAppModal()" class="whatsapp-float">
-        <i class="fab fa-whatsapp"></i>
-   </button>
 
     <header>
         <div class="logo-container reveal">
@@ -472,16 +470,22 @@
     
     <div style="height: 50px;"></div>
     
+    <button onclick="toggleWhatsAppModal()" class="whatsapp-float">
+        <i class="fab fa-whatsapp"></i>
+   </button>
+
+   
     <div id="whatsappModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
     <div style="background: white; width: 90%; max-width: 400px; border-radius: 15px; overflow: hidden; font-family: sans-serif;">
         <div style="background: #25d366; color: white; padding: 15px; text-align: center; font-weight: bold;">
-            أرسل ملاحظتك أو شكواك
+            صندوق الشكاوي والملاحظات
         </div>
-        <div style="padding: 20px;">
-            <textarea id="userNote" rows="4" style="width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 10px; text-align: right; direction: rtl;" placeholder="اكتب ملاحظتك هنا..."></textarea>
-            <button onclick="sendToWhatsApp()" style="width: 100%; background: #25d366; color: white; border: none; padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer;">
-                إرسال إلى واتساب
-            </button>
+        <div style="padding: 15px;">    
+            <button id="btn-main" style="width: 100%; background: #32CD32; color: white; border: 1px; padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer; align-items: center;"><a href="pages/us.html" style="font-weight: bold;">طلب مساعدة</a></button>
+            <button id="btn-main" style="width: 100%; background: #32CD32; color: white; border: 1px; padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer; align-items: center;"><a href="pages/donate.html" style="font-weight: bold;">طلب تبرع</a></button>
+            
+               <textarea id="userNote" rows="2" style="width: 100%; border: 1.5px solid #ddd; border-radius: 8px; padding: 12px; text-align: center; margin-top: 15px; direction: rtl;" placeholder="اكتب ملاحظتك هنا..."></textarea>
+            <button id="btn-main" style="width: 100%; background: #98FB98; color: blacke; border: none; padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer;"><a href="pages/index-ss.html">تواصل مع فريق الدعم</a></button>
             <button onclick="toggleWhatsAppModal()" style="width: 100%; background: #eee; color: #333; border: none; padding: 8px; border-radius: 8px; margin-top: 10px; cursor: pointer;">
                 إلغاء
             </button>
