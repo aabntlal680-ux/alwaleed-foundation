@@ -9,27 +9,22 @@
     <style>
         body { font-family: 'Tajawal', sans-serif; }
         .hidden { display: none !important; }
-        #adminMessagesArea::-webkit-scrollbar { width: 6px; }
-        #adminMessagesArea::-webkit-scrollbar-thumb { background-color: #475569; border-radius: 10px; }
-        .recording { animation: pulse 1.5s infinite; color: #ef4444 !important; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        #messagesArea::-webkit-scrollbar { width: 6px; }
+        #messagesArea::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
         @keyframes pulse-red {
-        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-        70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-    }
-    .recording-active {
-        color: #ef4444 !important;
-        animation: pulse-red 1.5s infinite;
-    }
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .recording-active { color: #ef4444 !important; animation: pulse-red 1.5s infinite; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
     
     <div id="authSection" class="bg-white p-6 rounded-lg shadow-md max-w-md mx-auto my-10 border-t-4 border-blue-600">
-        <h2 class="text-xl font-bold text-center mb-6 text-blue-900">تتواصل مع فريق دعم المؤسسة</h2>
+        <h2 class="text-xl font-bold text-center mb-6 text-blue-900">تواصل مع فريق الدعم</h2>
         
-        <button onclick="handleGoogleLogin()" class="w-full mb-4 flex items-center justify-center gap-2 border border-gray-300 bg-white py-2 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition shadow-sm">
+        <button onclick="handleGoogleLogin()" class="w-full mb-3 flex items-center justify-center gap-2 border border-gray-300 bg-white py-2 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition shadow-sm">
             <svg class="w-5 h-5" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -39,92 +34,69 @@
             الدخول عبر جوجل
         </button>
 
+        <button onclick="handleGuestLogin()" class="w-full mb-4 bg-slate-800 text-white py-2 rounded-lg font-bold hover:bg-slate-900 transition shadow-md flex items-center justify-center gap-2">
+            <span>🚀 دخول سريع (بدون حساب)</span>
+        </button>
+
         <div class="relative flex items-center justify-center mb-6">
             <div class="w-full border-t border-gray-200"></div>
-            <span class="absolute px-3 bg-white text-gray-400 text-xs">أو بالبريد الإلكتروني</span>
+            <span class="absolute px-3 bg-white text-gray-400 text-[10px]">أو بالبريد الإلكتروني</span>
         </div>
 
-        <form onsubmit="handleLogin(event)" class="space-y-4">
-        <div>
-            <label class="block text-xs text-gray-500 mb-1">البريد الإلكتروني</label>
-            <input type="text" id="authEmail" required
-                class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none border-gray-300" 
-                placeholder="example@mail.com">
-        </div>
-        
-        <div>
-            <label class="block text-xs text-gray-500 mb-1">كلمة المرور</label>
-            <input type="password" id="authPassword" required
-                class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none border-gray-300" 
-                placeholder="******">
-        </div>
-
-        <div class="flex gap-2 pt-2">
-            <button type="button" onclick="handleSignUp(event)" 
-                class="flex-1 bg-gray-100 text-gray-800 py-2 rounded-lg font-bold hover:bg-gray-200 transition">
-                إنشاء حساب
-            </button>
-            <button type="submit" 
-                class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700 transition">
-                دخول
-            </button>
-        </div>
-    </form>
-        
-
+        <form onsubmit="handleLogin(event)" class="space-y-3">
+            <input type="email" id="authEmail" placeholder="البريد الإلكتروني" class="w-full border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="password" id="authPassword" placeholder="كلمة المرور" class="w-full border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+            <div class="flex gap-2">
+                <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700 transition text-sm">دخول</button>
+                <button type="button" onclick="handleSignUp()" class="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg font-bold hover:bg-gray-200 transition text-sm">إنشاء حساب</button>
+            </div>
+        </form>
     </div>
 
     <div id="mainContent" class="hidden container mx-auto p-4 max-w-4xl">
         <header class="mb-8 text-center flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-bold text-blue-900">مركز الدعم الخاص</h1>
-                <p class="text-gray-600 text-sm">مساحة آمنة للتواصل مع فريقنا</p>
+                <p class="text-gray-600 text-sm">مؤسسة الوليد للإنسانية</p>
             </div>
-            <button onclick="handleLogout()" class="text-red-500 text-sm font-bold bg-red-50 px-3 py-1 rounded-lg border border-red-200 transition hover:bg-red-100">خروج</button>
+            <button onclick="handleLogout()" class="text-red-500 text-sm font-bold bg-red-50 px-3 py-1 rounded-lg border border-red-200 hover:bg-red-100 transition">خروج</button>
         </header>
-        
+
         <div class="bg-blue-50 p-6 rounded-lg mb-6 border border-blue-200 shadow-sm">
-            <h3 class="font-bold text-blue-900 mb-3">فتح طلب أو بلاغ جديد</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <select id="ticketCategory" class="border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                <select id="ticketCategory" class="border rounded-lg px-3 py-2 text-sm outline-none">
                     <option value="طلب مساعدة">طلب مساعدة</option>
                     <option value="استفسار">استفسار عام</option>
                     <option value="شكوى">تقديم شكوى</option>
                 </select>
-                <input type="text" id="newTicketSubject" placeholder="سجل اسمك هنا ..." class="border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500">
+                <input type="text" id="newTicketSubject" placeholder="اكتب اسمك أو موضوع الطلب..." class="border rounded-lg px-3 py-2 text-sm outline-none">
                 <button onclick="createNewTicket()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition">فتح التذكرة</button>
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="md:col-span-1 bg-white rounded-lg shadow p-4 h-[550px] flex flex-col">
-                <h2 class="font-bold mb-4 border-b pb-2 text-gray-700">تذاكري</h2>
+            <div class="md:col-span-1 bg-white rounded-lg shadow p-4 h-[550px] flex flex-col border border-gray-200">
+                <h2 class="font-bold mb-4 border-b pb-2 text-gray-700 text-right">تذاكري</h2>
                 <div id="ticketsList" class="space-y-3 overflow-y-auto flex-1 text-right"></div>
             </div>
 
             <div class="md:col-span-2 bg-white rounded-lg shadow flex flex-col h-[550px] border-t-4 border-blue-600 relative">
-                <div id="chatHeader" class="p-4 border-b bg-gray-50 font-bold text-blue-800">اختر تذكرة من الصندوق اعلاه لفتح الدردشة</div>
-                
+                <div id="chatHeader" class="p-4 border-b bg-gray-50 font-bold text-blue-800 text-right text-sm">اختر تذكرة لبدء المحادثة</div>
                 <div id="messagesArea" class="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-50 flex flex-col"></div>
-
                 <div class="p-4 border-t bg-white">
-                    <div id="filePreview" class="hidden mb-2 p-2 bg-blue-50 rounded text-xs flex justify-between items-center">
+                    <div id="filePreview" class="hidden mb-2 p-2 bg-blue-50 rounded text-[10px] flex justify-between items-center">
                         <span id="fileName" class="truncate ml-2"></span>
                         <button onclick="cancelFile()" class="text-red-500 font-bold px-2">X</button>
                     </div>
-                    
                     <form id="messageForm" class="flex items-center gap-2" onsubmit="handleMessageSubmit(event)">
                         <label class="cursor-pointer text-gray-400 hover:text-blue-600 transition p-1">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
                             <input type="file" id="fileInput" class="hidden" onchange="handleFileSelect(this)" disabled>
                         </label>
-
-                        <button type="button" id="voiceBtn" onclick="toggleRecording()" class="text-gray-400 hover:text-red-500 transition p-1" disabled title="تسجيل صوتي">
+                        <button type="button" id="voiceBtn" onclick="toggleRecording()" class="text-gray-400 hover:text-red-500 transition p-1" disabled>
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
                         </button>
-
                         <input type="text" id="messageInput" placeholder="اكتب رسالتك..." class="flex-1 border rounded-full px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none text-sm" disabled>
-                        
                         <button type="submit" id="sendBtn" class="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 disabled:opacity-50 transition" disabled>
                             <svg class="w-5 h-5 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                         </button>
@@ -134,235 +106,32 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // إعدادات Supabase
     const SUPABASE_URL = 'https://nfugvnjbpwhpzttfrtbg.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_2AyTT9Q94iccKqyIGlqH0Q_IGPPioI1';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const sounds = {
+        incoming: new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3'),
+        action: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3')
+    };
 
     let currentTicketId = null;
     let selectedFile = null;
     let mediaRecorder;
     let audioChunks = [];
-    let messageSubscription = null;
+    let currentUserId = null;
 
-    // --- 1. التحقق من المستخدم عند التحميل ---
+    // --- 1. إدارة الهوية والدخول ---
     async function checkUser() {
         const { data: { user } } = await supabaseClient.auth.getUser();
         if (user) {
-            const authSection = document.getElementById('authSection');
-            const mainContent = document.getElementById('mainContent');
-            if(authSection) authSection.classList.add('hidden');
-            if(mainContent) mainContent.classList.remove('hidden');
+            currentUserId = user.id;
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
             fetchMyTickets(user.id);
-        }
-    }
-
-    // --- 2. إدارة التذاكر (فتح تذكرة جديدة وجلب القائمة) ---
-    async function createNewTicket() {
-        const subjectInput = document.getElementById('newTicketSubject');
-        const categorySelect = document.getElementById('ticketCategory');
-        
-        if (!subjectInput || !subjectInput.value.trim()) return alert("يرجى كتابة عنوان للتذكرة");
-        
-        const { data: { user } } = await supabaseClient.auth.getUser();
-        if (!user) return alert("يجب تسجيل الدخول أولاً");
-
-        const subject = `[${categorySelect.value}] ${subjectInput.value.trim()}`;
-
-        const { data, error } = await supabaseClient
-            .from('tickets')
-            .insert([{ subject: subject, user_id: user.id }])
-            .select();
-
-        if (error) {
-            alert("خطأ في إنشاء التذكرة: " + error.message);
-        } else {
-            subjectInput.value = '';
-            fetchMyTickets(user.id);
-            alert("تم فتح التذكرة بنجاح");
-        }
-    }
-
-    async function fetchMyTickets(userId) {
-        const { data: tickets } = await supabaseClient
-            .from('tickets')
-            .select('*')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false });
-
-        const list = document.getElementById('ticketsList');
-        if (list && tickets) {
-            list.innerHTML = tickets.map(t => `
-                <div onclick="loadMessages('${t.id}', '${t.subject}')" class="p-3 border rounded-lg cursor-pointer hover:bg-blue-50 mb-2 transition bg-white shadow-sm border-r-4 ${currentTicketId === t.id ? 'border-blue-600 bg-blue-50' : 'border-gray-200'}">
-                    <div class="text-sm font-bold truncate">${t.subject}</div>
-                    <div class="text-[10px] text-gray-400 mt-1">${new Date(t.created_at).toLocaleString('ar-EG')}</div>
-                </div>
-            `).join('');
-        }
-    }
-
-    // --- 3. إدارة الرسائل والـ Realtime ---
-    async function loadMessages(ticketId, subject) {
-        currentTicketId = ticketId;
-        const header = document.getElementById('chatHeader');
-        if(header) header.innerText = subject;
-        
-        ['messageInput', 'sendBtn', 'fileInput', 'voiceBtn'].forEach(id => {
-            const el = document.getElementById(id);
-            if(el) el.disabled = false;
-        });
-
-        const { data: messages } = await supabaseClient
-            .from('messages')
-            .select('*')
-            .eq('ticket_id', ticketId)
-            .order('created_at', { ascending: true });
-
-        renderMessages(messages);
-        setupRealtimeSubscription(ticketId);
-    }
-
-    function setupRealtimeSubscription(ticketId) {
-        if (messageSubscription) supabaseClient.removeChannel(messageSubscription);
-
-        messageSubscription = supabaseClient
-            .channel(`public:messages:ticket=${ticketId}`)
-            .on('postgres_changes', { 
-                event: 'INSERT', 
-                schema: 'public', 
-                table: 'messages',
-                filter: `ticket_id=eq.${ticketId}` 
-            }, (payload) => {
-                appendSingleMessage(payload.new);
-            })
-            .subscribe();
-    }
-
-    function appendSingleMessage(msg) {
-        const area = document.getElementById('messagesArea');
-        if(!area) return;
-
-        supabaseClient.auth.getUser().then(({data: {user}}) => {
-            const isMe = msg.sender_id === user?.id;
-            const div = document.createElement('div');
-            div.className = `max-w-[85%] p-3 rounded-2xl shadow-sm mb-2 ${isMe ? 'bg-blue-600 text-white self-end rounded-tr-none' : 'bg-white text-gray-800 self-start border rounded-tl-none'}`;
-            
-            let content = '';
-            if (msg.message_type === 'image') {
-                content += `<img src="${msg.file_url}" class="rounded-lg mb-1 max-w-full h-auto cursor-pointer" onclick="window.open('${msg.file_url}')">`;
-            } else if (msg.message_type === 'voice') {
-                content += `<audio controls class="w-full max-w-[200px] h-8 mb-1"><source src="${msg.file_url}" type="audio/mpeg"></audio>`;
-            } else if (msg.file_url) {
-                content += `<a href="${msg.file_url}" target="_blank" class="text-xs underline flex items-center gap-1 mb-1">📎 عرض المرفق</a>`;
-            }
-            
-            if (msg.message_text) content += `<p class="text-sm">${msg.message_text}</p>`;
-            
-            div.innerHTML = content;
-            area.appendChild(div);
-            area.scrollTop = area.scrollHeight;
-        });
-    }
-
-    function renderMessages(messages) {
-        const area = document.getElementById('messagesArea');
-        if (!area) return;
-        area.innerHTML = '';
-        messages?.forEach(msg => appendSingleMessage(msg));
-    }
-
-    // --- 4. الوسائط (صوت وملفات) ---
-    async function toggleRecording() {
-        const btn = document.getElementById('voiceBtn');
-        if (!mediaRecorder || mediaRecorder.state === "inactive") {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
-                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-                mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/mpeg' });
-                    const audioFile = new File([audioBlob], "voice_msg.mp3", { type: 'audio/mpeg' });
-                    const url = await uploadFile(audioFile);
-                    sendFinalMessage("🎤 رسالة صوتية", url, 'voice');
-                };
-                mediaRecorder.start();
-                if(btn) btn.style.color = "red";
-            } catch (err) { alert("يرجى السماح بالوصول للميكروفون."); }
-        } else {
-            mediaRecorder.stop();
-            if(btn) btn.style.color = "";
-        }
-    }
-
-    async function uploadFile(file) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const { error } = await supabaseClient.storage.from('chat-attachments').upload(fileName, file);
-        if (error) throw error;
-        const { data } = supabaseClient.storage.from('chat-attachments').getPublicUrl(fileName);
-        return data.publicUrl;
-    }
-
-    function handleFileSelect(input) {
-        if (input.files && input.files[0]) {
-            selectedFile = input.files[0];
-            const preview = document.getElementById('filePreview');
-            const nameDisp = document.getElementById('fileName');
-            if(preview) preview.classList.remove('hidden');
-            if(nameDisp) nameDisp.innerText = selectedFile.name;
-        }
-    }
-
-    function cancelFile() {
-        selectedFile = null;
-        const preview = document.getElementById('filePreview');
-        if(preview) preview.classList.add('hidden');
-        const input = document.getElementById('fileInput');
-        if(input) input.value = '';
-    }
-
-    async function handleMessageSubmit(e) {
-        if(e) e.preventDefault();
-        const input = document.getElementById('messageInput');
-        if (!input || (!input.value.trim() && !selectedFile)) return;
-
-        let url = null, type = 'text', text = input.value.trim();
-        if (selectedFile) {
-            url = await uploadFile(selectedFile);
-            type = selectedFile.type.startsWith('image/') ? 'image' : 'file';
-            cancelFile();
-        }
-        await sendFinalMessage(text, url, type);
-        input.value = '';
-    }
-
-    async function sendFinalMessage(text, url, type) {
-        const { data: { user } } = await supabaseClient.auth.getUser();
-        if(!user) return;
-        await supabaseClient.from('messages').insert([{
-            ticket_id: currentTicketId,
-            message_text: text,
-            sender_id: user.id,
-            file_url: url,
-            message_type: type
-        }]);
-    }
-
-    // --- 5. الهوية وتسجيل الدخول ---
-    async function handleLogin(e) {
-        if (e) e.preventDefault();
-        const email = document.getElementById('authEmail').value;
-        const password = document.getElementById('authPassword').value;
-        
-        if (!email || !password) {
-            const { error } = await supabaseClient.auth.signInAnonymously();
-            if (error) alert(error.message); else checkUser();
-        } else {
-            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-            if (error) alert(error.message); else checkUser();
+            setupRealtimeGlobal();
         }
     }
 
@@ -374,16 +143,167 @@
         if (error) alert("خطأ جوجل: " + error.message);
     }
 
+    async function handleGuestLogin() {
+        const { data, error } = await supabaseClient.auth.signInAnonymously();
+        if (error) alert(error.message); else checkUser();
+    }
+
+    async function handleLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('authEmail').value;
+        const pass = document.getElementById('authPassword').value;
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
+        if (error) alert(error.message); else checkUser();
+    }
+
+    async function handleSignUp() {
+        const email = document.getElementById('authEmail').value;
+        const pass = document.getElementById('authPassword').value;
+        if(!email || !pass) return alert("يرجى إدخال البيانات");
+        const { error } = await supabaseClient.auth.signUp({ email, password: pass });
+        if (error) alert(error.message); else alert("تم إرسال رابط التفعيل لبريدك");
+    }
+
     async function handleLogout() {
         await supabaseClient.auth.signOut();
         window.location.reload();
     }
 
+    // --- 2. إدارة التذاكر ---
+    async function createNewTicket() {
+        const sub = document.getElementById('newTicketSubject').value.trim();
+        const cat = document.getElementById('ticketCategory').value;
+        if(!sub) return alert("يرجى كتابة عنوان");
+        
+        const { data, error } = await supabaseClient.from('tickets').insert([{ 
+            subject: `[${cat}] ${sub}`, 
+            user_id: currentUserId 
+        }]).select();
+
+        if(!error) {
+            document.getElementById('newTicketSubject').value = '';
+            fetchMyTickets(currentUserId);
+            sounds.action.play().catch(() => {});
+        }
+    }
+
+    async function fetchMyTickets(userId) {
+        const { data: tickets } = await supabaseClient.from('tickets').select('*').eq('user_id', userId).order('updated_at', { ascending: false });
+        const list = document.getElementById('ticketsList');
+        if (list && tickets) {
+            list.innerHTML = tickets.map(t => `
+                <div onclick="loadMessages('${t.id}', '${t.subject}')" class="p-3 border rounded-lg cursor-pointer hover:bg-blue-50 mb-2 transition bg-white shadow-sm border-r-4 ${currentTicketId === t.id ? 'border-blue-600 bg-blue-50' : 'border-gray-200'}">
+                    <div class="text-sm font-bold truncate text-slate-700">${t.subject}</div>
+                    <div class="text-[10px] text-gray-400 mt-1">${new Date(t.updated_at).toLocaleTimeString('ar-EG')}</div>
+                </div>
+            `).join('');
+        }
+    }
+
+    // --- 3. المحادثة والمزامنة ---
+    async function loadMessages(ticketId, subject) {
+        currentTicketId = ticketId;
+        sounds.action.play().catch(() => {});
+        document.getElementById('chatHeader').innerText = subject;
+        ['messageInput', 'sendBtn', 'fileInput', 'voiceBtn'].forEach(id => document.getElementById(id).disabled = false);
+
+        const { data: messages } = await supabaseClient.from('messages').select('*').eq('ticket_id', ticketId).order('created_at', { ascending: true });
+        renderMessages(messages);
+    }
+
+    function renderMessages(messages) {
+        const area = document.getElementById('messagesArea');
+        area.innerHTML = '';
+        messages?.forEach(msg => appendSingleMessage(msg));
+        area.scrollTop = area.scrollHeight;
+    }
+
+    function appendSingleMessage(msg) {
+        const area = document.getElementById('messagesArea');
+        const isMe = msg.sender_id === currentUserId;
+        const div = document.createElement('div');
+        div.className = `max-w-[85%] p-3 rounded-2xl shadow-sm mb-2 ${isMe ? 'bg-blue-600 text-white self-end rounded-tr-none' : 'bg-white text-gray-800 self-start border rounded-tl-none'}`;
+        
+        let content = '';
+        if (msg.message_type === 'image') content += `<img src="${msg.file_url}" class="rounded-lg mb-1 max-w-full h-auto cursor-pointer" onclick="window.open('${msg.file_url}')">`;
+        else if (msg.message_type === 'voice') content += `<audio controls class="w-full max-w-[200px] h-8 mb-1"><source src="${msg.file_url}"></audio>`;
+        else if (msg.file_url) content += `<a href="${msg.file_url}" target="_blank" class="text-xs underline block mb-1">📎 مرفق</a>`;
+        
+        if (msg.message_text) content += `<p class="text-sm">${msg.message_text}</p>`;
+        div.innerHTML = content;
+        area.appendChild(div);
+        area.scrollTop = area.scrollHeight;
+    }
+
+    function setupRealtimeGlobal() {
+        supabaseClient.channel('public:messages')
+            .on('postgres_changes', { event: 'INSERT', table: 'messages' }, (payload) => {
+                if (payload.new.sender_id !== currentUserId) {
+                    sounds.incoming.play().catch(() => {});
+                }
+                if (currentTicketId && payload.new.ticket_id === currentTicketId) {
+                    appendSingleMessage(payload.new);
+                }
+                fetchMyTickets(currentUserId);
+            })
+            .subscribe();
+    }
+
+    // --- 4. الصوت والملفات ---
+    async function toggleRecording() {
+        const btn = document.getElementById('voiceBtn');
+        if (!mediaRecorder || mediaRecorder.state === "inactive") {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            mediaRecorder.onstop = async () => {
+                const file = new File([new Blob(audioChunks)], `v_${Date.now()}.mp3`, { type: 'audio/mpeg' });
+                const url = await uploadFile(file);
+                await supabaseClient.from('messages').insert([{ ticket_id: currentTicketId, sender_id: currentUserId, file_url: url, message_type: 'voice' }]);
+                await supabaseClient.from('tickets').update({ updated_at: new Date().toISOString() }).eq('id', currentTicketId);
+            };
+            mediaRecorder.start();
+            btn.classList.add('recording-active');
+        } else {
+            mediaRecorder.stop();
+            btn.classList.remove('recording-active');
+        }
+    }
+
+    async function handleMessageSubmit(e) {
+        e.preventDefault();
+        const input = document.getElementById('messageInput');
+        if (!input.value.trim() && !selectedFile) return;
+
+        let url = null, type = 'text', text = input.value.trim();
+        if (selectedFile) {
+            url = await uploadFile(selectedFile);
+            type = selectedFile.type.startsWith('image/') ? 'image' : 'file';
+            cancelFile();
+        }
+
+        await supabaseClient.from('messages').insert([{
+            ticket_id: currentTicketId,
+            message_text: text || "📎 ملف مرفق",
+            sender_id: currentUserId,
+            file_url: url,
+            message_type: type
+        }]);
+        await supabaseClient.from('tickets').update({ updated_at: new Date().toISOString() }).eq('id', currentTicketId);
+        input.value = '';
+    }
+
+    async function uploadFile(file) {
+        const path = `chat/${Date.now()}_${file.name}`;
+        await supabaseClient.storage.from('chat-attachments').upload(path, file);
+        return supabaseClient.storage.from('chat-attachments').getPublicUrl(path).data.publicUrl;
+    }
+
+    function handleFileSelect(i) { if(i.files[0]){ selectedFile=i.files[0]; document.getElementById('filePreview').classList.remove('hidden'); document.getElementById('fileName').innerText=selectedFile.name; } }
+    function cancelFile() { selectedFile=null; document.getElementById('filePreview').classList.add('hidden'); document.getElementById('fileInput').value=''; }
+
     window.onload = checkUser;
 </script>
-
-
-
- 
 </body>
 </html>
