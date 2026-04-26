@@ -130,7 +130,7 @@ async function checkUser() {
     // جلب المستخدم الحالي
     const { data: { user } } = await supabaseClient.auth.getUser();
     
-    const MY_ADMIN_ID = '8a6f989c-44ec-4250-864d-07132be51e6f';
+    const MY_ADMIN_ID = '07faacef-7438-4b39-a4f7-2240563a77ac';
 
     if (user) {
         // إذا كنت أنت الآدمن، انتقل فوراً
@@ -150,7 +150,7 @@ async function checkUser() {
 
 // أضف هذا الجزء أيضاً لضمان التوجيه عند "تغيير" حالة الدخول (مثل لحظة ضغط زر جوجل)
 supabaseClient.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_IN' && session?.user?.id === '8a6f989c-44ec-4250-864d-07132be51e6f') {
+    if (event === 'SIGNED_IN' && session?.user?.id === '07faacef-7438-4b39-a4f7-2240563a77ac') {
         window.location.replace('index-admn.html');
     }
 });
