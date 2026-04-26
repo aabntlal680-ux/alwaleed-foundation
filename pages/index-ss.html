@@ -155,41 +155,52 @@
 
     // --- 2. إدارة التذاكر (الفتح الذكي والدمج) ---
     async function createNewTicket() {
-        const subInput = document.getElementById('newTicketSubject');
-        const sub = subInput.value.trim();
-        const cat = document.getElementById('ticketCategory').value;
-        
-        if(!sub) return alert("يرجى كتابة عنوان للتذكرة");
+    const subInput = document.getElementById('newTicketSubject');
+    const sub = subInput.value.trim();
+    const cat = document.getElementById('ticketCategory').value;
+    
+    if(!sub) return alert("يرجى كتابة عنوان للتذكرة");
+    if(!currentUserId) return alert("يجب تسجيل الدخول أولاً");
 
-        // الفحص: هل يوجد تذكرة سابقة؟
-        const { data: existingTickets } = await supabaseClient
-            .from('tickets')
-            .select('*')
-            .eq('user_id', currentUserId)
-            .order('updated_at', { ascending: false })
-            .limit(1);
+    // 1. البحث الصارم عن أي تذكرة لهذا المستخدم
+    const { data: existingTickets, error: searchError } = await supabaseClient
+        .from('tickets')
+        .select('id, subject')
+        .eq('user_id', currentUserId)
+        .order('updated_at', { ascending: false })
+        .limit(1);
 
-        if (existingTickets && existingTickets.length > 0) {
-            // توجيه للتذكرة القديمة
-            const lastTicket = existingTickets[0];
-            loadMessages(lastTicket.id, lastTicket.subject);
-            alert("لديك تذكرة نشطة بالفعل، تم توجيهك إليها.");
-            subInput.value = '';
-        } else {
-            // إنشاء تذكرة جديدة تماماً
-            const { data: newTicket, error: createError } = await supabaseClient.from('tickets').insert([{ 
-                subject: `[${cat}] ${sub}`, 
-                user_id: currentUserId 
-            }]).select();
-
-            if(!createError) {
-                subInput.value = '';
-                fetchMyTickets(currentUserId);
-                loadMessages(newTicket[0].id, newTicket[0].subject);
-                sounds.action.play().catch(() => {});
-            }
-        }
+    if (searchError) {
+        console.error("خطأ في البحث:", searchError);
+        return;
     }
+
+    // 2. إذا وُجدت تذكرة، قم بتحويله فوراً واخرج من الدالة (return)
+    if (existingTickets && existingTickets.length > 0) {
+        const lastTicket = existingTickets[0];
+        console.log("تم العثور على تذكرة قديمة ID:", lastTicket.id);
+        
+        // مسح المدخلات وتحويل المستخدم
+        subInput.value = '';
+        loadMessages(lastTicket.id, lastTicket.subject);
+        
+        alert("لديك تذكرة نشطة بالفعل، سيتم توجيهك إليها لمتابعة الدردشة.");
+        return; // هذه الكلمة هي الأهم لمنع إنشاء تذكرة جديدة
+    }
+
+    // 3. لن يصل الكود هنا إلا إذا كان المستخدم ليس لديه أي تذاكر
+    console.log("لا توجد تذاكر، يتم إنشاء واحدة جديدة...");
+    const { data: newTicket, error: createError } = await supabaseClient
+        .from('tickets')
+        .insert([{ subject: `[${cat}] ${sub}`, user_id: currentUserId }])
+        .select();
+
+    if(!createError && newTicket.length > 0) {
+        subInput.value = '';
+        fetchMyTickets(currentUserId);
+        loadMessages(newTicket[0].id, newTicket[0].subject);
+    }
+}
 
     async function fetchMyTickets(userId) {
         const { data: tickets } = await supabaseClient
