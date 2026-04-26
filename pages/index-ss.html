@@ -125,28 +125,35 @@
 
     // --- 1. إدارة الهوية والدخول ---
         // --- 1. إدارة الهوية والدخول ---
-    async function checkUser() {
-        const { data: { user } } = await supabaseClient.auth.getUser();
-        
-        // معرفك الخاص (الآدمن)
-        const MY_ADMIN_ID = '8a6f989c-44ec-4250-864d-07132be51e6f';
+    // --- 1. إدارة الهوية والدخول المحدثة ---
+async function checkUser() {
+    // جلب المستخدم الحالي
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    
+    const MY_ADMIN_ID = '8a6f989c-44ec-4250-864d-07132be51e6f';
 
-        if (user) {
-            // فحص: هل المستخدم الحالي هو أنت؟
-            if (user.id === MY_ADMIN_ID) {
-                // إذا كنت أنت، انتقل فوراً لصفحة الآدمن
-                window.location.href = 'index-admn.html'; 
-                return; // إيقاف تنفيذ الدالة هنا
-            }
-
-            // إذا لم تكن أنت، أكمل الدخول كزائر عادي
-            currentUserId = user.id;
-            document.getElementById('authSection').classList.add('hidden');
-            document.getElementById('mainContent').classList.remove('hidden');
-            fetchMyTickets(user.id);
-            setupRealtimeGlobal();
+    if (user) {
+        // إذا كنت أنت الآدمن، انتقل فوراً
+        if (user.id === MY_ADMIN_ID) {
+            window.location.href = 'index-admn.html';
+            return; 
         }
+
+        // للمستخدم العادي
+        currentUserId = user.id;
+        document.getElementById('authSection').classList.add('hidden');
+        document.getElementById('mainContent').classList.remove('hidden');
+        fetchMyTickets(user.id);
+        setupRealtimeGlobal();
     }
+}
+
+// أضف هذا الجزء أيضاً لضمان التوجيه عند "تغيير" حالة الدخول (مثل لحظة ضغط زر جوجل)
+supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session?.user?.id === '8a6f989c-44ec-4250-864d-07132be51e6f') {
+        window.location.href = 'index-admn.html';
+    }
+});
 
 
     async function handleGoogleLogin() {
