@@ -135,7 +135,7 @@ async function checkUser() {
     if (user) {
         // إذا كنت أنت الآدمن، انتقل فوراً
         if (user.id === MY_ADMIN_ID) {
-            window.location.href = 'index-admn.html';
+            window.location.replace('index-admn.html');
             return; 
         }
 
@@ -151,7 +151,7 @@ async function checkUser() {
 // أضف هذا الجزء أيضاً لضمان التوجيه عند "تغيير" حالة الدخول (مثل لحظة ضغط زر جوجل)
 supabaseClient.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' && session?.user?.id === '8a6f989c-44ec-4250-864d-07132be51e6f') {
-        window.location.href = 'index-admn.html';
+        window.location.replace('index-admn.html');
     }
 });
 
