@@ -220,7 +220,7 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
             .order('updated_at', { ascending: false });
 
         const list = document.getElementById('ticketsList');
-        if (list && tickets) {
+        if (list && data) {
             list.innerHTML = tickets.map(t => `
                 <div onclick="loadMessages('${t.id}', '${t.subject}')" class="p-3 border rounded-lg cursor-pointer hover:bg-blue-50 mb-2 transition bg-white shadow-sm border-r-4 ${currentTicketId === t.id ? 'border-blue-600 bg-blue-50' : 'border-gray-200'}">
                     <div class="text-sm font-bold truncate text-slate-700">${t.subject}</div>
