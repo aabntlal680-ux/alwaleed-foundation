@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة الإدارة المتقدمة - مؤسسة الوليد</title>
+    <title>لوحة الإدارة - مؤسسة الوليد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -12,22 +12,14 @@
         #adminMessagesArea::-webkit-scrollbar { width: 6px; }
         #adminMessagesArea::-webkit-scrollbar-thumb { background-color: #475569; border-radius: 10px; }
         
-        @keyframes pulse-red {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-        }
-        .recording-active { color: #ef4444 !important; animation: pulse-red 1.5s infinite; }
-
-        /* أنيميشن النقطة الخضراء للتفاعل الحديث */
         @keyframes pulse-green {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
             70% { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
         }
         .online-dot {
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             background-color: #22c55e;
             border-radius: 50%;
             display: inline-block;
@@ -41,55 +33,29 @@
 
     <div class="container mx-auto p-4">
         <header class="flex justify-between items-center mb-6 bg-slate-800 p-4 rounded-lg shadow-xl border-b-2 border-blue-500">
-            <h1 class="text-2xl font-bold text-blue-400">نظام إدارة وخدمة العملاء</h1>
-            <div id="userPresenceStatus" class="text-sm bg-slate-700 text-slate-400 px-3 py-1 rounded-full">العميل: متصل حالياً</div>
+            <h1 class="text-2xl font-bold text-blue-400">نظام الإدارة - مؤسسة الوليد</h1>
+            <div id="statusIndicator" class="text-xs bg-green-900/30 text-green-400 px-3 py-1 rounded-full border border-green-500/50">لوحة التحكم نشطة</div>
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div class="md:col-span-1 bg-slate-800 rounded-lg p-4 h-[700px] flex flex-col shadow-lg border border-slate-700">
+            <div class="md:col-span-1 bg-slate-800 rounded-lg p-4 h-[750px] flex flex-col shadow-lg border border-slate-700">
                 <h2 class="font-bold mb-4 border-b border-slate-700 pb-2 flex justify-between items-center">
                     <span>الطلبات الواردة</span>
                     <span id="ticketCount" class="bg-blue-600 text-xs px-2 py-1 rounded-full">0</span>
                 </h2>
-                <div id="allTicketsList" class="space-y-3 overflow-y-auto flex-1 pr-1 text-right">
-                    <p class="text-gray-500 text-center text-sm">جاري التحديث...</p>
-                </div>
+                <div id="allTicketsList" class="space-y-2 overflow-y-auto flex-1 pr-1 text-right"></div>
             </div>
             
-            <div class="md:col-span-3 bg-slate-800 rounded-lg flex flex-col h-[700px] shadow-lg relative border border-slate-700">
-                <div id="adminChatHeader" class="p-4 border-b border-slate-700 bg-slate-750 rounded-t-lg">
-                    <h3 id="chatHeaderTitle" class="font-bold text-gray-400">اختر محادثة للبدء</h3>
+            <div class="md:col-span-3 bg-slate-800 rounded-lg flex flex-col h-[750px] shadow-lg border border-slate-700">
+                <div id="adminChatHeader" class="p-4 border-b border-slate-700 bg-slate-900/50 rounded-t-lg">
+                    <h3 id="chatHeaderTitle" class="font-bold text-slate-500">اختر محادثة لبدء الرد</h3>
                 </div>
-                
-                <div id="adminMessagesArea" class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-850 flex flex-col"></div>
-
+                <div id="adminMessagesArea" class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-900/20 flex flex-col"></div>
                 <form id="adminReplyForm" class="p-4 border-t border-slate-700 bg-slate-800 rounded-b-lg" onsubmit="handleAdminSubmit(event)">
-                    <div id="filePreview" class="hidden mb-2 p-2 bg-slate-700 rounded flex items-center justify-between">
-                        <span id="fileName" class="text-xs truncate max-w-[200px] text-blue-300"></span>
-                        <button type="button" onclick="cancelFile()" class="text-red-400 text-xs font-bold px-2">X</button>
-                    </div>
-
                     <div class="flex items-center gap-3">
-                        <label class="cursor-pointer hover:text-blue-400 transition text-gray-400 p-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                            </svg>
-                            <input type="file" id="fileInput" class="hidden" onchange="handleFileSelect(this)" disabled>
-                        </label>
-
-                        <button type="button" id="voiceBtn" onclick="toggleRecording()" class="hover:text-red-500 transition text-gray-400 p-1" disabled>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                            </svg>
-                        </button>
-
-                        <input type="text" id="adminReplyInput" placeholder="اكتب ردك هنا..." 
-                               class="flex-1 bg-slate-900 border border-slate-700 rounded-full px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm" disabled>
-                        
-                        <button type="submit" id="sendBtn" class="bg-blue-600 hover:bg-blue-700 p-2 rounded-full transition shadow-md disabled:opacity-50" disabled>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                            </svg>
+                        <input type="text" id="adminReplyInput" placeholder="اكتب ردك هنا..." class="flex-1 bg-slate-900 border border-slate-700 rounded-full px-5 py-3 outline-none text-white text-sm" disabled>
+                        <button type="submit" id="sendBtn" class="bg-blue-600 hover:bg-blue-700 p-3 rounded-full transition disabled:opacity-30" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
                         </button>
                     </div>
                 </form>
@@ -97,202 +63,133 @@
         </div>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     const SUPABASE_URL = 'https://nfugvnjbpwhpzttfrtbg.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_2AyTT9Q94iccKqyIGlqH0Q_IGPPioI1'; 
     const supabaseAdmin = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const sounds = {
-        newMessage: new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3'),
-        newTicket: new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'),
-        openTicket: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3')
-    };
-
     let activeTicketId = null;
-    let selectedFile = null;
-    let mediaRecorder;
-    let audioChunks = [];
     let adminId = '07faacef-7438-4b39-a4f7-2240563a77ac';
+    let allTickets = [];
 
-    async function initAdmin() {
-        const { data: { user } } = await supabaseAdmin.auth.getUser();
-        if(user) adminId = user.id;
-        fetchAllTickets();
-        setupRealtimeSubscriptions();
+    async function init() {
+        await fetchAllTickets();
+        setupRealtime();
     }
 
     async function fetchAllTickets() {
-        const { data: tickets, error } = await supabaseAdmin
+        const { data, error } = await supabaseAdmin
             .from('tickets')
             .select('*')
-            .order('updated_at', { ascending: false }); 
-        
-        if (error || !tickets) return;
+            .order('updated_at', { ascending: false });
 
-        document.getElementById('ticketCount').innerText = tickets.length;
+        if (!error && data) {
+            allTickets = data;
+            renderTickets();
+        }
+    }
+
+    function renderTickets() {
+        allTickets.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
         const container = document.getElementById('allTicketsList');
+        document.getElementById('ticketCount').innerText = allTickets.length;
         container.innerHTML = '';
         
-        tickets.forEach(ticket => {
+        allTickets.forEach(ticket => {
             const isActive = activeTicketId === ticket.id;
-            const hasUnread = ticket.unread_count > 0;
-            // تظهر النقطة إذا كان التفاعل خلال آخر 5 دقائق
-            const isRecentlyActive = (new Date() - new Date(ticket.updated_at)) < 300000;
+            // النقطة تظهر فقط إذا كان هناك رسائل غير مقروءة (unread_count > 0)
+            const hasNewMessages = ticket.unread_count > 0;
 
             const div = document.createElement('div');
-            div.className = `relative p-3 rounded-lg cursor-pointer border transition mb-2 ${isActive ? 'bg-blue-900 border-blue-400 shadow-lg' : 'bg-slate-700 border-transparent hover:bg-slate-600'}`;
+            div.className = `p-4 rounded-xl cursor-pointer border transition-all duration-300 ${isActive ? 'bg-blue-600/20 border-blue-500 shadow-lg' : 'bg-slate-700/50 border-slate-600 hover:bg-slate-700'}`;
             
             div.innerHTML = `
-                ${hasUnread ? `<span class="absolute -right-1 -top-1 flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span></span>` : ''}
-                <div class="flex justify-between items-start text-right" dir="rtl">
-                    <div class="text-sm font-bold truncate flex-1 flex items-center">
-                        ${isRecentlyActive ? '<span class="online-dot"></span>' : ''}
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-bold flex items-center">
+                        ${hasNewMessages ? '<span class="online-dot"></span>' : ''}
                         ${ticket.subject || 'بدون عنوان'}
-                    </div>
+                    </span>
+                    <span class="text-[10px] text-slate-500">${new Date(ticket.updated_at).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})}</span>
                 </div>
-                <div class="text-[10px] text-gray-400 mt-1 flex justify-between">
-                    <span>ID: ${ticket.user_id.substring(0,5)}</span>
-                    <span>${new Date(ticket.updated_at).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})}</span>
-                </div>`;
+            `;
             
-            div.onclick = () => loadAdminMessages(ticket.id, ticket.subject);
+            div.onclick = () => loadMessages(ticket.id, ticket.subject);
             container.appendChild(div);
         });
     }
 
-    async function loadAdminMessages(ticketId, subject) {
+    async function loadMessages(ticketId, subject) {
         activeTicketId = ticketId;
-        sounds.openTicket.play().catch(() => {});
-
         document.getElementById('adminReplyInput').disabled = false;
         document.getElementById('sendBtn').disabled = false;
-        document.getElementById('fileInput').disabled = false;
-        document.getElementById('voiceBtn').disabled = false;
         document.getElementById('chatHeaderTitle').innerText = subject;
-        document.getElementById('chatHeaderTitle').className = "font-bold text-blue-400";
 
-        await supabaseAdmin.from('messages').update({ 'is_read': true }).eq('ticket_id', ticketId).neq('sender_id', adminId);
-        await supabaseAdmin.from('tickets').update({ unread_count: 0, updated_at: new Date().toISOString() }).eq('id', ticketId);
+        // عند فتح التذكرة: تصفير الـ unread_count في قاعدة البيانات فوراً لتختفي النقطة
+        await supabaseAdmin.from('tickets').update({ unread_count: 0 }).eq('id', ticketId);
 
-        const { data: messages } = await supabaseAdmin.from('messages').select('*').eq('ticket_id', ticketId).order('created_at', { ascending: true });
+        const { data: messages } = await supabaseAdmin.from('messages')
+            .select('*').eq('ticket_id', ticketId).order('created_at', { ascending: true });
             
         const area = document.getElementById('adminMessagesArea');
         area.innerHTML = '';
-        
         messages?.forEach(msg => {
             const isMe = msg.sender_id === adminId;
-            const div = document.createElement('div');
-            div.className = `max-w-[85%] p-3 rounded-2xl mb-2 flex flex-col ${isMe ? 'bg-blue-600 self-end rounded-tr-none text-white' : 'bg-slate-700 self-start rounded-tl-none text-white'}`;
-            
-            let htmlContent = '';
-            if (msg.message_type === 'image') htmlContent += `<img src="${msg.file_url}" class="rounded-lg mb-1 max-w-full">`;
-            else if (msg.message_type === 'voice') htmlContent += `<audio controls class="w-48 h-8 mb-1"><source src="${msg.file_url}"></audio>`;
-            else if (msg.file_url) htmlContent += `<a href="${msg.file_url}" target="_blank" class="text-xs underline mb-1">📎 ملف مرفق</a>`;
-            
-            if (msg.message_text) htmlContent += `<p class="text-sm">${msg.message_text}</p>`;
-            
-            if (isMe) {
-                const checkColor = msg.is_read ? 'text-blue-300' : 'text-slate-400';
-                htmlContent += `<div class="self-end mt-1 ${checkColor}"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M22.3,6.3L11.5,17.1l-4.8-4.8l-1.4,1.4l6.2,6.2L23.7,7.7L22.3,6.3z M17.7,7.7l-1.4-1.4l-4.8,4.8l1.4,1.4L17.7,7.7z M0.3,13.7l1.4-1.4l4.8,4.8l-1.4,1.4L0.3,13.7z"/></svg></div>`;
-            }
-            div.innerHTML = htmlContent;
-            area.appendChild(div);
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `max-w-[80%] p-3 rounded-2xl mb-2 ${isMe ? 'bg-blue-600 self-end rounded-tr-none' : 'bg-slate-700 self-start rounded-tl-none'}`;
+            msgDiv.innerHTML = `<p class="text-sm">${msg.message_text}</p>`;
+            area.appendChild(msgDiv);
         });
         area.scrollTop = area.scrollHeight;
+        
+        // تحديث القائمة محلياً لإخفاء النقطة فور النقر
+        const tIdx = allTickets.findIndex(t => t.id === ticketId);
+        if(tIdx !== -1) allTickets[tIdx].unread_count = 0;
+        renderTickets();
     }
 
     async function handleAdminSubmit(e) {
-        if(e) e.preventDefault();
+        e.preventDefault();
         const input = document.getElementById('adminReplyInput');
         const text = input.value.trim();
-        if (!text && !selectedFile) return;
+        if (!text || !activeTicketId) return;
 
-        let url = null, type = 'text';
-        if (selectedFile) {
-            url = await uploadFile(selectedFile);
-            type = selectedFile.type.startsWith('image/') ? 'image' : 'file';
-            cancelFile();
-        }
-
-        const now = new Date().toISOString();
-        const { error: msgErr } = await supabaseAdmin.from('messages').insert([{
+        const { error } = await supabaseAdmin.from('messages').insert([{
             ticket_id: activeTicketId,
-            message_text: text || (type === 'image' ? '📎 صورة' : '📎 ملف'),
-            sender_id: adminId,
-            file_url: url,
-            message_type: type
+            message_text: text,
+            sender_id: adminId
         }]);
 
-        if (!msgErr) {
-            await supabaseAdmin.from('tickets').update({ updated_at: now }).eq('id', activeTicketId);
+        if (!error) {
+            await supabaseAdmin.from('tickets').update({ updated_at: new Date().toISOString() }).eq('id', activeTicketId);
             input.value = '';
             fetchAllTickets();
         }
     }
 
-    function setupRealtimeSubscriptions() {
-        supabaseAdmin.channel('public:chat_sync')
-            .on('postgres_changes', { event: 'INSERT', table: 'messages' }, async (payload) => {
-                // إذا جاءت رسالة من العميل:
-                if (payload.new.sender_id !== adminId) {
-                    sounds.newMessage.play().catch(() => {});
+    function setupRealtime() {
+        supabaseAdmin.channel('admin_sync')
+            .on('postgres_changes', { event: '*', table: 'messages' }, async (payload) => {
+                if (payload.eventType === 'INSERT' && payload.new.sender_id !== adminId) {
+                    // عند وصول رسالة من العميل: زيادة unread_count وتحديث الوقت لتظهر النقطة وتقفز للأعلى
+                    const { data: currentTicket } = await supabaseAdmin.from('tickets').select('unread_count').eq('id', payload.new.ticket_id).single();
+                    const newCount = (currentTicket?.unread_count || 0) + 1;
                     
-                    // تحديث وقت التذكرة فوراً لتظهر النقطة الخضراء وتقفز للأعلى
-                    await supabaseAdmin
-                        .from('tickets')
-                        .update({ updated_at: new Date().toISOString() })
-                        .eq('id', payload.new.ticket_id);
+                    await supabaseAdmin.from('tickets').update({ 
+                        unread_count: newCount, 
+                        updated_at: new Date().toISOString() 
+                    }).eq('id', payload.new.ticket_id);
                 }
-                
                 if (activeTicketId && payload.new.ticket_id === activeTicketId) {
-                    loadAdminMessages(activeTicketId, document.getElementById('chatHeaderTitle').innerText);
+                    loadMessages(activeTicketId, document.getElementById('chatHeaderTitle').innerText);
                 }
-                fetchAllTickets(); 
-            })
-            .on('postgres_changes', { event: 'INSERT', table: 'tickets' }, () => {
-                sounds.newTicket.play().catch(() => {});
                 fetchAllTickets();
             })
-            .on('postgres_changes', { event: 'UPDATE', table: 'tickets' }, () => {
-                fetchAllTickets();
-            })
+            .on('postgres_changes', { event: '*', table: 'tickets' }, () => fetchAllTickets())
             .subscribe();
     }
 
-    async function uploadFile(file) {
-        const path = `chat/${Date.now()}_${file.name}`;
-        await supabaseAdmin.storage.from('chat-attachments').upload(path, file);
-        return supabaseAdmin.storage.from('chat-attachments').getPublicUrl(path).data.publicUrl;
-    }
-
-    function handleFileSelect(i) { if(i.files[0]){ selectedFile=i.files[0]; document.getElementById('filePreview').classList.remove('hidden'); document.getElementById('fileName').innerText=selectedFile.name; } }
-    function cancelFile() { selectedFile=null; document.getElementById('filePreview').classList.add('hidden'); document.getElementById('fileInput').value=''; }
-
-    async function toggleRecording() {
-        const btn = document.getElementById('voiceBtn');
-        if (!mediaRecorder || mediaRecorder.state === "inactive") {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
-            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-            mediaRecorder.onstop = async () => {
-                const file = new File([new Blob(audioChunks)], `v_${Date.now()}.mp3`, { type: 'audio/mpeg' });
-                const url = await uploadFile(file);
-                const now = new Date().toISOString();
-                await supabaseAdmin.from('messages').insert([{ ticket_id: activeTicketId, sender_id: adminId, file_url: url, message_type: 'voice' }]);
-                await supabaseAdmin.from('tickets').update({ updated_at: now }).eq('id', activeTicketId);
-                fetchAllTickets();
-            };
-            mediaRecorder.start();
-            btn.classList.add('recording-active');
-        } else {
-            mediaRecorder.stop();
-            btn.classList.remove('recording-active');
-        }
-    }
-
-    window.onload = initAdmin;
+    init();
 </script>
 </body>
 </html>
