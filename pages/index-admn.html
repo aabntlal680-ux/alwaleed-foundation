@@ -18,13 +18,8 @@
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
         }
         .online-dot {
-            width: 10px;
-            height: 10px;
-            background-color: #3b82f6;
-            border-radius: 50%;
-            display: inline-block;
-            margin-left: 8px;
-            animation: pulse-blue 2s infinite;
+            width: 10px; height: 10px; background-color: #3b82f6; border-radius: 50%;
+            display: inline-block; margin-left: 8px; animation: pulse-blue 2s infinite;
         }
     </style>
 </head>
@@ -52,8 +47,18 @@
                 <div id="adminMessagesArea" class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-900/20 flex flex-col"></div>
                 
                 <form id="adminReplyForm" class="p-4 border-t border-slate-700 bg-slate-800 rounded-b-lg" onsubmit="event.preventDefault(); sendAdminReply();">
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="document.getElementById('fileInput').click()" class="p-2 text-slate-400 hover:text-blue-400 transition" id="fileBtn" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        </button>
+                        <input type="file" id="fileInput" class="hidden" accept="image/*" onchange="handleFileUpload(event)">
+
+                        <button type="button" id="voiceBtn" class="p-2 text-slate-400 hover:text-red-400 transition" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+                        </button>
+
                         <input type="text" id="adminReplyInput" placeholder="اكتب ردك هنا..." class="flex-1 bg-slate-900 border border-slate-700 rounded-full px-5 py-3 outline-none text-white text-sm focus:border-blue-500 transition" disabled>
+                        
                         <button type="submit" id="sendBtn" class="bg-blue-600 hover:bg-blue-700 p-3 rounded-full transition disabled:opacity-30 disabled:cursor-not-allowed" disabled>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -123,10 +128,11 @@
         activeTicketId = ticketId;
         document.getElementById('adminReplyInput').disabled = false;
         document.getElementById('sendBtn').disabled = false;
+        document.getElementById('fileBtn').disabled = false;
+        document.getElementById('voiceBtn').disabled = false;
         document.getElementById('chatHeaderTitle').innerText = subject;
         document.getElementById('chatHeaderTitle').classList.add('text-blue-400');
 
-        // تصغير العداد في القاعدة عند الفتح
         await supabaseAdmin.from('tickets').update({ unread_count: 0 }).eq('id', ticketId);
 
         const { data: messages } = await supabaseAdmin.from('messages')
@@ -134,57 +140,74 @@
             
         const area = document.getElementById('adminMessagesArea');
         area.innerHTML = '';
+        
         messages?.forEach(msg => {
             const isMe = msg.sender_id === adminId;
             const msgDiv = document.createElement('div');
             msgDiv.className = `max-w-[80%] p-3 rounded-2xl mb-2 flex flex-col ${isMe ? 'bg-blue-600 self-end rounded-tr-none' : 'bg-slate-700 self-start rounded-tl-none'}`;
-            msgDiv.innerHTML = `<p class="text-sm">${msg.message_text}</p>`;
+            
+            let contentHTML = '';
+            if (msg.message_type === 'image') {
+                contentHTML += `<img src="${msg.file_url}" class="rounded-lg mb-1 max-w-full cursor-pointer" onclick="window.open(this.src)">`;
+            } else if (msg.message_type === 'voice') {
+                contentHTML += `<audio controls class="w-48 h-8 mb-1"><source src="${msg.file_url}"></audio>`;
+            }
+            
+            if (msg.message_text) {
+                contentHTML += `<p class="text-sm">${msg.message_text}</p>`;
+            }
+            
+            msgDiv.innerHTML = contentHTML;
             area.appendChild(msgDiv);
         });
         area.scrollTop = area.scrollHeight;
         
-        // تحديث الحالة محلياً
         const tIdx = allTickets.findIndex(t => t.id === ticketId);
         if(tIdx !== -1) allTickets[tIdx].unread_count = 0;
         renderTickets();
     }
 
-    // الدالة المسؤولة عن الإرسال والقفز للأعلى
     async function sendAdminReply() {
         const input = document.getElementById('adminReplyInput');
         const text = input.value.trim();
         if (!text || !activeTicketId) return;
 
+        await insertMessage(text, 'text');
+        input.value = '';
+    }
+
+    async function insertMessage(content, type, fileUrl = null) {
         try {
-            // 1. إدخال الرسالة
-            const { error: msgError } = await supabaseAdmin
-                .from('messages')
-                .insert([{
-                    ticket_id: activeTicketId,
-                    sender_id: adminId,
-                    message_text: text,
-                    message_type: 'text'
-                }]);
+            const { error: msgError } = await supabaseAdmin.from('messages').insert([{
+                ticket_id: activeTicketId,
+                sender_id: adminId,
+                message_text: type === 'text' ? content : null,
+                message_type: type,
+                file_url: fileUrl
+            }]);
 
             if (msgError) throw msgError;
 
-            // 2. تحديث وقت التذكرة (لجعلها تقفز للأعلى)
-            const { error: ticketError } = await supabaseAdmin
-                .from('tickets')
-                .update({ 
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', activeTicketId);
-
-            if (ticketError) throw ticketError;
-
-            // 3. مسح الحقل وإعادة الجلب
-            input.value = '';
+            await supabaseAdmin.from('tickets').update({ updated_at: new Date().toISOString() }).eq('id', activeTicketId);
+            await fetchAllTickets();
             await loadMessages(activeTicketId, document.getElementById('chatHeaderTitle').innerText);
-            await fetchAllTickets(); 
-
         } catch (err) {
             console.error("خطأ:", err.message);
+        }
+    }
+
+    async function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file || !activeTicketId) return;
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `admin_uploads/${fileName}`;
+
+        const { data, error } = await supabaseAdmin.storage.from('chat_attachments').upload(filePath, file);
+        if (!error) {
+            const { data: { publicUrl } } = supabaseAdmin.storage.from('chat_attachments').getPublicUrl(filePath);
+            await insertMessage(null, 'image', publicUrl);
         }
     }
 
@@ -192,32 +215,13 @@
         supabaseAdmin.channel('admin_sync')
             .on('postgres_changes', { event: '*', table: 'messages' }, async (payload) => {
                 if (payload.eventType === 'INSERT' && payload.new.sender_id !== adminId) {
-                    // عند وصول رسالة من العميل: تحديث وقت التذكرة والعداد
                     const { data: currentTicket } = await supabaseAdmin.from('tickets').select('unread_count').eq('id', payload.new.ticket_id).single();
                     const newCount = (currentTicket?.unread_count || 0) + 1;
-                    
-                    await supabaseAdmin.from('tickets').update({ 
-                        unread_count: newCount, 
-                        updated_at: new Date().toISOString() 
-                    }).eq('id', payload.new.ticket_id);
+                    await supabaseAdmin.from('tickets').update({ unread_count: newCount, updated_at: new Date().toISOString() }).eq('id', payload.new.ticket_id);
                 }
                 
-                // تحديث الرسائل إذا كانت التذكرة مفتوحة
                 if (activeTicketId && payload.new.ticket_id === activeTicketId) {
-                    const area = document.getElementById('adminMessagesArea');
-                    const isAtBottom = area.scrollHeight - area.scrollTop <= area.clientHeight + 100;
-                    
-                    // إعادة تحميل الرسائل فقط للتذكرة النشطة
-                    const { data: messages } = await supabaseAdmin.from('messages').select('*').eq('ticket_id', activeTicketId).order('created_at', { ascending: true });
-                    area.innerHTML = '';
-                    messages?.forEach(msg => {
-                        const isMe = msg.sender_id === adminId;
-                        const msgDiv = document.createElement('div');
-                        msgDiv.className = `max-w-[80%] p-3 rounded-2xl mb-2 flex flex-col ${isMe ? 'bg-blue-600 self-end rounded-tr-none' : 'bg-slate-700 self-start rounded-tl-none'}`;
-                        msgDiv.innerHTML = `<p class="text-sm">${msg.message_text}</p>`;
-                        area.appendChild(msgDiv);
-                    });
-                    if (isAtBottom) area.scrollTop = area.scrollHeight;
+                    loadMessages(activeTicketId, document.getElementById('chatHeaderTitle').innerText);
                 }
                 fetchAllTickets();
             })
