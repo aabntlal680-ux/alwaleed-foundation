@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة الإدارة - مؤسسة الوليد</title>
+    <title>لوحة الإدارة الاحترافية - مؤسسة الوليد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -11,16 +11,10 @@
         .hidden { display: none !important; }
         #adminMessagesArea::-webkit-scrollbar { width: 6px; }
         #adminMessagesArea::-webkit-scrollbar-thumb { background-color: #475569; border-radius: 10px; }
-        
-        @keyframes pulse-blue {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-            70% { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(59, 130, 246, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-        }
-        .online-dot {
-            width: 10px; height: 10px; background-color: #3b82f6; border-radius: 50%;
-            display: inline-block; margin-left: 8px; animation: pulse-blue 2s infinite;
-        }
+        @keyframes pulse-blue { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 70% { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(59, 130, 246, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
+        .online-dot { width: 10px; height: 10px; background-color: #3b82f6; border-radius: 50%; display: inline-block; margin-left: 8px; animation: pulse-blue 2s infinite; }
+        .recording { color: #ef4444 !important; animation: pulse-red 1s infinite; }
+        @keyframes pulse-red { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body class="bg-slate-900 min-h-screen text-white">
@@ -42,21 +36,20 @@
             
             <div class="md:col-span-3 bg-slate-800 rounded-lg flex flex-col h-[750px] shadow-lg border border-slate-700">
                 <div id="adminChatHeader" class="p-4 border-b border-slate-700 bg-slate-900/50 rounded-t-lg text-center">
-                    <h3 id="chatHeaderTitle" class="font-bold text-slate-500">اختر محادثة لبدء الرد</h3>
+                    <h3 id="chatHeaderTitle" class="font-bold text-slate-500 italic">اختر محادثة لبدء الرد</h3>
                 </div>
                 <div id="adminMessagesArea" class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-900/20 flex flex-col"></div>
                 
                 <form id="adminReplyForm" class="p-4 border-t border-slate-700 bg-slate-800 rounded-b-lg" onsubmit="event.preventDefault(); sendAdminReply();">
                     <div class="flex items-center gap-3">
-                        <button type="button" onclick="document.getElementById('imageInput').click()" class="p-2 text-slate-400 hover:text-blue-400 transition">
+                        <button type="button" onclick="document.getElementById('imageInput').click()" class="p-2 text-slate-400 hover:text-blue-400 transition" title="إرفاق صورة">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                         </button>
-                        <input type="file" id="imageInput" class="hidden" accept="image/*" onchange="uploadAndSendMedia(this, 'image')">
+                        <input type="file" id="imageInput" class="hidden" accept="image/*" onchange="uploadImage(this)">
 
-                        <button type="button" onclick="document.getElementById('voiceInput').click()" class="p-2 text-slate-400 hover:text-red-400 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+                        <button type="button" id="voiceBtn" onclick="toggleRecording()" class="p-2 text-slate-400 hover:text-red-500 transition" title="تسجيل صوتي">
+                            <svg xmlns="http://www.w3.org/2000/svg" id="micIcon" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
                         </button>
-                        <input type="file" id="voiceInput" class="hidden" accept="audio/*" onchange="uploadAndSendMedia(this, 'voice')">
 
                         <input type="text" id="adminReplyInput" placeholder="اكتب ردك هنا..." class="flex-1 bg-slate-900 border border-slate-700 rounded-full px-5 py-3 outline-none text-white text-sm focus:border-blue-500 transition" disabled>
                         
@@ -78,6 +71,8 @@
     let activeTicketId = null;
     const adminId = '07faacef-7438-4b39-a4f7-2240563a77ac';
     let allTickets = [];
+    let mediaRecorder;
+    let audioChunks = [];
 
     async function init() {
         await fetchAllTickets();
@@ -85,62 +80,39 @@
     }
 
     async function fetchAllTickets() {
-        const { data, error } = await supabaseAdmin
-            .from('tickets')
-            .select('*')
-            .order('updated_at', { ascending: false });
-
-        if (!error && data) {
-            allTickets = data;
-            renderTickets();
-        }
+        const { data, error } = await supabaseAdmin.from('tickets').select('*').order('updated_at', { ascending: false });
+        if (!error && data) { allTickets = data; renderTickets(); }
     }
 
     function renderTickets() {
         const container = document.getElementById('allTicketsList');
         document.getElementById('ticketCount').innerText = allTickets.length;
         container.innerHTML = '';
-        
         allTickets.forEach(ticket => {
             const isActive = activeTicketId === ticket.id;
             const hasUnread = ticket.unread_count > 0;
             const div = document.createElement('div');
             div.className = `p-4 rounded-xl cursor-pointer border transition-all duration-300 mb-2 ${isActive ? 'bg-blue-600/20 border-blue-500 shadow-lg' : 'bg-slate-700/50 border-slate-600 hover:bg-slate-700'}`;
-            
-            div.innerHTML = `
-                <div class="flex items-center justify-between">
-                    <span class="text-sm font-bold flex items-center">
-                        ${hasUnread ? '<span class="online-dot"></span>' : ''}
-                        ${ticket.subject || 'بدون عنوان'}
-                    </span>
-                    <span class="text-[10px] text-slate-500">${new Date(ticket.updated_at).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})}</span>
-                </div>
-            `;
-            
-            div.onclick = () => loadMessages(ticket.id, ticket.subject, false); // تم إضافة false لمنع تحديث الوقت عند النقر
+            div.innerHTML = `<div class="flex items-center justify-between"><span class="text-sm font-bold flex items-center">${hasUnread ? '<span class="online-dot"></span>' : ''}${ticket.subject || 'بدون عنوان'}</span><span class="text-[10px] text-slate-500">${new Date(ticket.updated_at).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})}</span></div>`;
+            div.onclick = () => loadMessages(ticket.id, ticket.subject, false);
             container.appendChild(div);
         });
     }
 
-    async function loadMessages(ticketId, subject, shouldUpdateTicket = false) {
+    async function loadMessages(ticketId, subject, shouldJump = false) {
         activeTicketId = ticketId;
         document.getElementById('adminReplyInput').disabled = false;
         document.getElementById('sendBtn').disabled = false;
         document.getElementById('chatHeaderTitle').innerText = subject;
-        document.getElementById('chatHeaderTitle').className = "font-bold text-blue-400";
+        document.getElementById('chatHeaderTitle').classList.replace('text-slate-500', 'text-blue-400');
 
-        // تحديث قاعدة البيانات: تصفير العداد فقط
         await supabaseAdmin.from('tickets').update({ unread_count: 0 }).eq('id', ticketId);
-
-        // إذا أرسلنا رسالة فقط نقوم بتحديث الوقت (عند النقر لن يحدث هذا)
-        if (shouldUpdateTicket) {
+        if (shouldJump) {
             await supabaseAdmin.from('tickets').update({ updated_at: new Date().toISOString() }).eq('id', ticketId);
             await fetchAllTickets();
         }
 
-        const { data: messages } = await supabaseAdmin.from('messages')
-            .select('*').eq('ticket_id', ticketId).order('created_at', { ascending: true });
-            
+        const { data: messages } = await supabaseAdmin.from('messages').select('*').eq('ticket_id', ticketId).order('created_at', { ascending: true });
         const area = document.getElementById('adminMessagesArea');
         area.innerHTML = '';
         messages?.forEach(msg => {
@@ -150,79 +122,72 @@
             
             let html = "";
             if (msg.message_type === 'image' || msg.file_url?.match(/\.(jpg|jpeg|png|gif)$/i)) {
-                html += `<img src="${msg.file_url}" class="rounded-lg mb-2 max-w-full cursor-pointer" onclick="window.open(this.src)">`;
-            } else if (msg.message_type === 'voice' || msg.file_url?.match(/\.(mp3|wav|ogg|m4a|aac)$/i)) {
-                html += `<audio controls class="w-full h-8 mb-2"><source src="${msg.file_url}"></audio>`;
+                html += `<img src="${msg.file_url}" class="rounded-lg mb-2 max-w-full cursor-pointer hover:opacity-90" onclick="window.open(this.src)">`;
+            } else if (msg.message_type === 'voice' || msg.file_url?.match(/\.(mp3|wav|ogg|m4a|webm)$/i)) {
+                html += `<audio controls class="w-full h-10 mb-2 brightness-90 shadow-inner"><source src="${msg.file_url}"></audio>`;
             }
-            if (msg.message_text) html += `<p class="text-sm">${msg.message_text}</p>`;
+            if (msg.message_text) html += `<p class="text-sm leading-relaxed">${msg.message_text}</p>`;
             
             msgDiv.innerHTML = html;
             area.appendChild(msgDiv);
         });
         area.scrollTop = area.scrollHeight;
-
-        // تحديث القائمة محلياً لإخفاء النقطة
-        const tIdx = allTickets.findIndex(t => t.id === ticketId);
-        if(tIdx !== -1) {
-            allTickets[tIdx].unread_count = 0;
-            renderTickets();
-        }
     }
 
     async function sendAdminReply() {
         const input = document.getElementById('adminReplyInput');
         const text = input.value.trim();
         if (!text || !activeTicketId) return;
-
-        const { error } = await supabaseAdmin.from('messages').insert([{
-            ticket_id: activeTicketId,
-            sender_id: adminId,
-            message_text: text,
-            message_type: 'text'
-        }]);
-
-        if (!error) {
-            input.value = '';
-            await loadMessages(activeTicketId, document.getElementById('chatHeaderTitle').innerText, true); // تحديث الوقت هنا فقط
-        }
+        const { error } = await supabaseAdmin.from('messages').insert([{ ticket_id: activeTicketId, sender_id: adminId, message_text: text, message_type: 'text' }]);
+        if (!error) { input.value = ''; loadMessages(activeTicketId, document.getElementById('chatHeaderTitle').innerText, true); }
     }
 
-    async function uploadAndSendMedia(input, type) {
+    // رفع الصور
+    async function uploadImage(input) {
         const file = input.files[0];
         if (!file || !activeTicketId) return;
+        const path = `chat/${Date.now()}_${file.name}`;
+        const { error: upErr } = await supabaseAdmin.storage.from('chat_attachments').upload(path, file);
+        if (upErr) return alert("فشل الرفع: " + upErr.message);
+        const { data: { publicUrl } } = supabaseAdmin.storage.from('chat_attachments').getPublicUrl(path);
+        await supabaseAdmin.from('messages').insert([{ ticket_id: activeTicketId, sender_id: adminId, file_url: publicUrl, message_type: 'image' }]);
+        loadMessages(activeTicketId, document.getElementById('chatHeaderTitle').innerText, true);
+    }
 
-        const fileName = `${Date.now()}_${file.name}`;
-        const filePath = `admin_uploads/${fileName}`;
-
-        const { error: uploadError } = await supabaseAdmin.storage.from('chat_attachments').upload(filePath, file);
-        if (uploadError) return alert("فشل الرفع");
-
-        const { data: { publicUrl } } = supabaseAdmin.storage.from('chat_attachments').getPublicUrl(filePath);
-
-        const { error: msgError } = await supabaseAdmin.from('messages').insert([{
-            ticket_id: activeTicketId,
-            sender_id: adminId,
-            file_url: publicUrl,
-            message_type: type
-        }]);
-
-        if (!msgError) {
-            await loadMessages(activeTicketId, document.getElementById('chatHeaderTitle').innerText, true); // تحديث الوقت هنا أيضاً
+    // تسجيل الصوت المباشر
+    async function toggleRecording() {
+        const mic = document.getElementById('micIcon');
+        if (!mediaRecorder || mediaRecorder.state === "inactive") {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const path = `chat/voice_${Date.now()}.webm`;
+                    const { error: upErr } = await supabaseAdmin.storage.from('chat_attachments').upload(path, audioBlob);
+                    if (!upErr) {
+                        const { data: { publicUrl } } = supabaseAdmin.storage.from('chat_attachments').getPublicUrl(path);
+                        await supabaseAdmin.from('messages').insert([{ ticket_id: activeTicketId, sender_id: adminId, file_url: publicUrl, message_type: 'voice' }]);
+                        loadMessages(activeTicketId, document.getElementById('chatHeaderTitle').innerText, true);
+                    }
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                mediaRecorder.start();
+                mic.parentElement.classList.add('recording');
+            } catch (err) { alert("يجب السماح بالوصول للميكروفون"); }
+        } else {
+            mediaRecorder.stop();
+            mic.parentElement.classList.remove('recording');
         }
     }
 
     function setupRealtime() {
-        supabaseAdmin.channel('admin_sync')
-            .on('postgres_changes', { event: '*', table: 'messages' }, async (payload) => {
-                if (payload.eventType === 'INSERT' && payload.new.sender_id !== adminId) {
-                    await fetchAllTickets(); // إعادة الترتيب فور وصول رسالة من العميل
-                }
-                if (activeTicketId && payload.new.ticket_id === activeTicketId) {
-                    loadMessages(activeTicketId, document.getElementById('chatHeaderTitle').innerText, false);
-                }
-            })
-            .on('postgres_changes', { event: '*', table: 'tickets' }, () => fetchAllTickets())
-            .subscribe();
+        supabaseAdmin.channel('db_sync').on('postgres_changes', { event: '*', table: 'messages' }, async (p) => {
+            if (p.eventType === 'INSERT' && p.new.sender_id !== adminId) await fetchAllTickets();
+            if (activeTicketId && p.new.ticket_id === activeTicketId) loadMessages(activeTicketId, document.getElementById('chatHeaderTitle').innerText, false);
+        }).on('postgres_changes', { event: '*', table: 'tickets' }, () => fetchAllTickets()).subscribe();
     }
 
     init();
