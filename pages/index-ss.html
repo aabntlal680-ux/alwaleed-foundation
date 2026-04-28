@@ -195,46 +195,46 @@
     function renderMessages(messages) {
     const area = document.getElementById('messagesArea');
     if (!area) return;
-    
-    area.innerHTML = ''; // تنظيف المنطقة
+    area.innerHTML = ''; 
 
     messages?.forEach(msg => {
         const isMe = msg.sender_id === currentUserId; 
         const msgDiv = document.createElement('div');
         
-        // تنسيق الفقاعة (أزرق للمستخدم، رمادي للإدارة)
         msgDiv.className = `max-w-[85%] p-3 rounded-2xl mb-2 flex flex-col ${
             isMe ? 'bg-blue-600 text-white self-end rounded-tr-none' : 'bg-slate-700 text-white self-start rounded-tl-none border border-slate-600'
         }`;
         
         let content = '';
 
-        // 1. إذا كان نوع الرسالة صوتاً (هذا هو الجزء المفقود لديك)
-        if (msg.message_type === 'voice') {
+        // الحل البديل: فحص الرابط نفسه بدلاً من الاعتماد على النوع فقط
+        const url = msg.file_url || "";
+        
+        if (msg.message_type === 'voice' || url.includes('.webm') || url.includes('voice')) {
             content = `
-                <div class="flex items-center gap-2 p-1">
-                    <audio controls class="w-full max-w-[210px] h-9 mb-1" style="filter: brightness(1.2);">
-                        <source src="${msg.file_url}" type="audio/webm">
+                <div class="audio-container p-1">
+                    <audio controls class="w-full max-w-[210px] h-9" style="filter: brightness(1.5);">
+                        <source src="${url}" type="audio/webm">
                         متصفحك لا يدعم المشغل
                     </audio>
                 </div>`;
-        } 
-        // 2. إذا كان نوع الرسالة صورة
-        else if (msg.message_type === 'image') {
-            content = `<img src="${msg.file_url}" class="rounded-lg mb-2 max-w-full h-auto">`;
+        } else if (msg.message_type === 'image' || url.match(/\.(jpg|jpeg|png|gif)$/i)) {
+            content = `<img src="${url}" class="rounded-lg mb-2 max-w-full shadow-sm">`;
         }
 
-        // 3. إضافة النص إذا وجد
         if (msg.message_text) {
-            content += `<p class="text-sm leading-relaxed">${msg.message_text}</p>`;
+            content += `<p class="text-sm leading-relaxed px-1">${msg.message_text}</p>`;
         }
+
+        // إذا ظلت الفقاعة فارغة، نضع رداً احتياطياً
+        if (!content) content = '<span class="text-[10px] opacity-40">ملف مرفق قيد المعالجة...</span>';
 
         msgDiv.innerHTML = content;
         area.appendChild(msgDiv);
     });
-
     area.scrollTop = area.scrollHeight;
 }
+
 
 
 
