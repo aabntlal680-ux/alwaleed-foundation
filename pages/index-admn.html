@@ -11,12 +11,30 @@
         .hidden { display: none !important; }
         #adminMessagesArea::-webkit-scrollbar { width: 6px; }
         #adminMessagesArea::-webkit-scrollbar-thumb { background-color: #475569; border-radius: 10px; }
+        
         @keyframes pulse-red {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
             70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
         .recording-active { color: #ef4444 !important; animation: pulse-red 1.5s infinite; }
+
+        /* أنيميشن النقطة الخضراء للتفاعل الحديث */
+        @keyframes pulse-green {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        .online-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 10px;
+            animation: pulse-green 2s infinite;
+            border: 2px solid #0f172a;
+        }
     </style>
 </head>
 <body class="bg-slate-900 min-h-screen text-white">
@@ -43,8 +61,7 @@
                     <h3 id="chatHeaderTitle" class="font-bold text-gray-400">اختر محادثة للبدء</h3>
                 </div>
                 
-                <div id="adminMessagesArea" class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-850 flex flex-col">
-                    </div>
+                <div id="adminMessagesArea" class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-850 flex flex-col"></div>
 
                 <form id="adminReplyForm" class="p-4 border-t border-slate-700 bg-slate-800 rounded-b-lg" onsubmit="handleAdminSubmit(event)">
                     <div id="filePreview" class="hidden mb-2 p-2 bg-slate-700 rounded flex items-center justify-between">
@@ -86,7 +103,6 @@
     const SUPABASE_KEY = 'sb_publishable_2AyTT9Q94iccKqyIGlqH0Q_IGPPioI1'; 
     const supabaseAdmin = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // تجهيز الأصوات
     const sounds = {
         newMessage: new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3'),
         newTicket: new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'),
@@ -105,46 +121,49 @@
         fetchAllTickets();
         setupRealtimeSubscriptions();
     }
-async function fetchAllTickets() {
-    const { data: tickets, error } = await supabaseAdmin
-        .from('tickets')
-        .select('*')
-        .order('updated_at', { ascending: false });
-    
-    if (error || !tickets) return;
 
-    document.getElementById('ticketCount').innerText = tickets.length;
-    const container = document.getElementById('allTicketsList');
-    container.innerHTML = '';
-    
-    tickets.forEach(ticket => {
-        const isActive = activeTicketId === ticket.id;
-        const hasUnread = ticket.unread_count > 0;
+    async function fetchAllTickets() {
+        const { data: tickets, error } = await supabaseAdmin
+            .from('tickets')
+            .select('*')
+            .order('updated_at', { ascending: false }); 
+        
+        if (error || !tickets) return;
 
-        // إنشاء عنصر التذكرة
-        const div = document.createElement('div');
+        document.getElementById('ticketCount').innerText = tickets.length;
+        const container = document.getElementById('allTicketsList');
+        container.innerHTML = '';
         
-        div.className = `relative p-3 rounded-lg cursor-pointer border transition mb-2 ${isActive ? 'bg-blue-900 border-blue-400 shadow-lg' : 'bg-slate-700 border-transparent hover:bg-slate-600'}`;
-        
-        div.innerHTML = `
-            ${hasUnread ? `<span class="absolute -right-1 -top-1 flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span></span>` : ''}
-            <div class="flex justify-between items-start text-right" dir="rtl">
-                <div class="text-sm font-bold truncate flex-1">${ticket.subject || 'بدون عنوان'}</div>
-            </div>
-            <div class="text-[10px] text-gray-400 mt-1 flex justify-between">
-                <span>ID: ${ticket.user_id.substring(0,5)}</span>
-                <span>${new Date(ticket.updated_at).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})}</span>
-            </div>`;
-        
-        div.onclick = () => loadAdminMessages(ticket.id, ticket.subject);
-        container.appendChild(div);
-    });
-}
+        tickets.forEach(ticket => {
+            const isActive = activeTicketId === ticket.id;
+            const hasUnread = ticket.unread_count > 0;
+            // تظهر النقطة إذا كان التفاعل خلال آخر 5 دقائق
+            const isRecentlyActive = (new Date() - new Date(ticket.updated_at)) < 300000;
 
-    
+            const div = document.createElement('div');
+            div.className = `relative p-3 rounded-lg cursor-pointer border transition mb-2 ${isActive ? 'bg-blue-900 border-blue-400 shadow-lg' : 'bg-slate-700 border-transparent hover:bg-slate-600'}`;
+            
+            div.innerHTML = `
+                ${hasUnread ? `<span class="absolute -right-1 -top-1 flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span></span>` : ''}
+                <div class="flex justify-between items-start text-right" dir="rtl">
+                    <div class="text-sm font-bold truncate flex-1 flex items-center">
+                        ${isRecentlyActive ? '<span class="online-dot"></span>' : ''}
+                        ${ticket.subject || 'بدون عنوان'}
+                    </div>
+                </div>
+                <div class="text-[10px] text-gray-400 mt-1 flex justify-between">
+                    <span>ID: ${ticket.user_id.substring(0,5)}</span>
+                    <span>${new Date(ticket.updated_at).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})}</span>
+                </div>`;
+            
+            div.onclick = () => loadAdminMessages(ticket.id, ticket.subject);
+            container.appendChild(div);
+        });
+    }
+
     async function loadAdminMessages(ticketId, subject) {
         activeTicketId = ticketId;
-        sounds.openTicket.play().catch(() => {}); // صوت فتح التذكرة
+        sounds.openTicket.play().catch(() => {});
 
         document.getElementById('adminReplyInput').disabled = false;
         document.getElementById('sendBtn').disabled = false;
@@ -208,23 +227,31 @@ async function fetchAllTickets() {
         if (!msgErr) {
             await supabaseAdmin.from('tickets').update({ updated_at: now }).eq('id', activeTicketId);
             input.value = '';
+            fetchAllTickets();
         }
     }
 
     function setupRealtimeSubscriptions() {
-        supabaseAdmin.channel('public:messages')
-            .on('postgres_changes', { event: 'INSERT', table: 'messages' }, (payload) => {
-                // صوت عند وصول رسالة جديدة من العميل فقط
+        supabaseAdmin.channel('public:chat_sync')
+            .on('postgres_changes', { event: 'INSERT', table: 'messages' }, async (payload) => {
+                // إذا جاءت رسالة من العميل:
                 if (payload.new.sender_id !== adminId) {
                     sounds.newMessage.play().catch(() => {});
+                    
+                    // تحديث وقت التذكرة فوراً لتظهر النقطة الخضراء وتقفز للأعلى
+                    await supabaseAdmin
+                        .from('tickets')
+                        .update({ updated_at: new Date().toISOString() })
+                        .eq('id', payload.new.ticket_id);
                 }
+                
                 if (activeTicketId && payload.new.ticket_id === activeTicketId) {
                     loadAdminMessages(activeTicketId, document.getElementById('chatHeaderTitle').innerText);
                 }
                 fetchAllTickets(); 
             })
             .on('postgres_changes', { event: 'INSERT', table: 'tickets' }, () => {
-                sounds.newTicket.play().catch(() => {}); // صوت عند فتح تذكرة جديدة تماماً
+                sounds.newTicket.play().catch(() => {});
                 fetchAllTickets();
             })
             .on('postgres_changes', { event: 'UPDATE', table: 'tickets' }, () => {
@@ -252,8 +279,10 @@ async function fetchAllTickets() {
             mediaRecorder.onstop = async () => {
                 const file = new File([new Blob(audioChunks)], `v_${Date.now()}.mp3`, { type: 'audio/mpeg' });
                 const url = await uploadFile(file);
+                const now = new Date().toISOString();
                 await supabaseAdmin.from('messages').insert([{ ticket_id: activeTicketId, sender_id: adminId, file_url: url, message_type: 'voice' }]);
-                await supabaseAdmin.from('tickets').update({ updated_at: new Date().toISOString() }).eq('id', activeTicketId);
+                await supabaseAdmin.from('tickets').update({ updated_at: now }).eq('id', activeTicketId);
+                fetchAllTickets();
             };
             mediaRecorder.start();
             btn.classList.add('recording-active');
