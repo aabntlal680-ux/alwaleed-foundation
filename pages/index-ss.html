@@ -194,22 +194,47 @@
 
     function renderMessages(messages) {
     const area = document.getElementById('messagesArea');
-    area.innerHTML = '';
+    if (!area) return;
     
+    area.innerHTML = ''; // تنظيف المنطقة مرة واحدة فقط في البداية
+
     messages?.forEach(msg => {
-        const { data: messages } = await supabaseAdmin.from('messages').select('*').eq('ticket_id', id).order('created_at', { ascending: true });
-        const area = document.getElementById('adminMessagesArea');
-        area.innerHTML = (messages || []).map(msg => {
-            const isMe = msg.sender_id === adminId;
-            let content = msg.message_type === 'image' ? `<img src="${msg.file_url}" class="rounded-lg mb-2 max-w-full" style="max-height:250px">` : 
-                          msg.message_type === 'voice' ? `<audio controls><source src="${msg.file_url}" type="audio/webm"></audio>` : '';
-            return `<div class="max-w-[80%] p-3 rounded-2xl mb-2 ${isMe ? 'bg-blue-600 self-end rounded-tr-none' : 'bg-slate-700 self-start rounded-tl-none'}">
-                        ${content}${msg.message_text ? `<p class="text-sm">${msg.message_text}</p>` : ''}
-                    </div>`;
-        }).join('');
-        area.scrollTop = area.scrollHeight;
-        if (updateTime) fetchAllTickets();
-    }
+        // تحديد هل الرسالة من المستخدم الحالي أم من الإدارة
+        const isMe = msg.sender_id === currentUserId; 
+        
+        let content = '';
+
+        // عرض الصورة
+        if (msg.message_type === 'image') {
+            content = `<img src="${msg.file_url}" class="rounded-lg mb-2 max-w-full h-auto shadow-sm" style="max-height: 200px;">`;
+        } 
+        // عرض مشغل الصوت (تأكد من وجود خاصية controls)
+        else if (msg.message_type === 'voice') {
+            content = `
+                <div class="flex items-center gap-2 p-1">
+                    <audio controls class="w-full max-w-[200px] h-8 mb-1" style="filter: brightness(1.2);">
+                        <source src="${msg.file_url}" type="audio/webm">
+                        متصفحك لا يدعم المشغل
+                    </audio>
+                </div>`;
+        }
+
+        // بناء الفقاعة بالكامل
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `max-w-[80%] p-3 rounded-2xl mb-2 flex flex-col ${isMe ? 'bg-blue-600 text-white self-end rounded-tr-none' : 'bg-slate-700 text-white self-start rounded-tl-none border border-slate-600'}`;
+        
+        msgDiv.innerHTML = `
+            ${content}
+            ${msg.message_text ? `<p class="text-sm leading-relaxed">${msg.message_text}</p>` : ''}
+        `;
+        
+        area.appendChild(msgDiv);
+    });
+
+    // التمرير التلقائي لآخر رسالة
+    area.scrollTop = area.scrollHeight;
+}
+
 
     // --- الدالة المصححة لإرسال الرسائل ---
     async function handleMessageSubmit(e) {
