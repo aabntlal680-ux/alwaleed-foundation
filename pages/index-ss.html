@@ -202,33 +202,36 @@
         const isMe = msg.sender_id === currentUserId; 
         const msgDiv = document.createElement('div');
         
-        // تنسيق الفقاعة بناءً على المرسل
+        // تنسيق الفقاعة بناءً على المرسل لضمان عدم ظهورها فارغة
         msgDiv.className = `max-w-[85%] p-3 rounded-2xl mb-2 flex flex-col ${
             isMe ? 'bg-blue-600 text-white self-end rounded-tr-none' : 'bg-slate-700 text-white self-start rounded-tl-none border border-slate-600'
         }`;
         
         let content = '';
 
-        // 1. إذا كانت الرسالة "صورة"
-        if (msg.message_type === 'image') {
-            content += `<img src="${msg.file_url}" class="rounded-lg mb-2 max-w-full h-auto cursor-pointer" onclick="window.open(this.src)">`;
+        // 1. معالجة الصور
+        if (msg.message_type === 'image' || (msg.file_url && msg.file_url.match(/\.(jpg|jpeg|png|gif)$/i))) {
+            content += `<img src="${msg.file_url}" class="rounded-lg mb-2 max-w-full h-auto shadow-sm" style="max-height: 250px;">`;
         } 
         
-        // 2. إذا كانت الرسالة "صوت" (هذا الجزء الذي يحل مشكلة الأيقونات الفارغة)
-        else if (msg.message_type === 'voice') {
+        // 2. معالجة الصوت (إظهار المشغل بدلاً من الفراغ)
+        else if (msg.message_type === 'voice' || (msg.file_url && msg.file_url.includes('.webm'))) {
             content += `
-                <div class="p-1">
-                    <audio controls class="w-full max-w-[210px] h-9 mb-1" style="filter: brightness(1.1) contrast(1.1);">
+                <div class="bg-black/20 rounded-xl p-2 mb-1">
+                    <audio controls class="w-full h-9" style="filter: brightness(1.5) contrast(1.2);">
                         <source src="${msg.file_url}" type="audio/webm">
                         متصفحك لا يدعم المشغل
                     </audio>
                 </div>`;
         }
 
-        // 3. إضافة النص (سواء كان مع الصورة/الصوت أو لوحده)
+        // 3. معالجة النص
         if (msg.message_text) {
-            content += `<p class="text-sm leading-relaxed">${msg.message_text}</p>`;
+            content += `<p class="text-sm leading-relaxed px-1">${msg.message_text}</p>`;
         }
+
+        // إذا لم يكن هناك نص أو وسائط (حالة نادرة جداً)
+        if (!content) content = '<span class="text-xs italic opacity-50">رسالة فارغة</span>';
 
         msgDiv.innerHTML = content;
         area.appendChild(msgDiv);
