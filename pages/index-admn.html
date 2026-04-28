@@ -122,7 +122,8 @@
             const isActive = activeTicketId === ticket.id;
             const hasUnread = ticket.unread_count > 0;
 
-            const div = document.createElement('div');
+            if (error || !tickets) return; 
+
             div.className = `relative p-3 rounded-lg cursor-pointer border transition mb-2 ${isActive ? 'bg-blue-900 border-blue-400 shadow-lg' : 'bg-slate-700 border-transparent hover:bg-slate-600'}`;
             
             div.innerHTML = `
