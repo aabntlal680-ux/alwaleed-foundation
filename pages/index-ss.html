@@ -197,43 +197,19 @@
     area.innerHTML = '';
     
     messages?.forEach(msg => {
-        const isMe = msg.sender_id === currentUserId;
-        const div = document.createElement('div');
-        
-        // تنسيق الفقاعة
-        div.className = `max-w-[85%] p-3 rounded-2xl shadow-sm mb-2 ${isMe ? 'bg-blue-600 text-white self-end rounded-tr-none' : 'bg-slate-700 text-white self-start rounded-tl-none border border-slate-600'}`;
-        
-        let content = '';
-
-        // 1. معالجة الصور
-        if (msg.message_type === 'image') {
-            content += `<img src="${msg.file_url}" class="rounded-lg mb-1 max-w-full h-auto cursor-pointer" onclick="window.open(this.src)">`;
-        } 
-        
-        // 2. معالجة الصوت (هذا هو الجزء الذي كان يظهر فارغاً)
-        else if (msg.message_type === 'voice') {
-            content += `
-                <div class="flex items-center gap-2 p-1">
-                    <audio controls class="w-full max-w-[220px] h-9 mb-1" style="filter: brightness(1.5) contrast(1.2);">
-                        <source src="${msg.file_url}" type="audio/webm">
-                        متصفحك لا يدعم المشغل
-                    </audio>
-                </div>`;
-        }
-
-        // 3. إضافة النص إذا وجد مع الصورة أو الصوت أو كنص منفرد
-        if (msg.message_text) {
-            content += `<p class="text-sm leading-relaxed">${msg.message_text}</p>`;
-        }
-
-        div.innerHTML = content;
-        area.appendChild(div);
-    });
-    
-    // التمرير لأسفل تلقائياً
-    area.scrollTop = area.scrollHeight;
-}
-
+        const { data: messages } = await supabaseAdmin.from('messages').select('*').eq('ticket_id', id).order('created_at', { ascending: true });
+        const area = document.getElementById('adminMessagesArea');
+        area.innerHTML = (messages || []).map(msg => {
+            const isMe = msg.sender_id === adminId;
+            let content = msg.message_type === 'image' ? `<img src="${msg.file_url}" class="rounded-lg mb-2 max-w-full" style="max-height:250px">` : 
+                          msg.message_type === 'voice' ? `<audio controls><source src="${msg.file_url}" type="audio/webm"></audio>` : '';
+            return `<div class="max-w-[80%] p-3 rounded-2xl mb-2 ${isMe ? 'bg-blue-600 self-end rounded-tr-none' : 'bg-slate-700 self-start rounded-tl-none'}">
+                        ${content}${msg.message_text ? `<p class="text-sm">${msg.message_text}</p>` : ''}
+                    </div>`;
+        }).join('');
+        area.scrollTop = area.scrollHeight;
+        if (updateTime) fetchAllTickets();
+    }
 
     // --- الدالة المصححة لإرسال الرسائل ---
     async function handleMessageSubmit(e) {
