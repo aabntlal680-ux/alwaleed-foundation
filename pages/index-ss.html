@@ -209,6 +209,7 @@
         });
         area.scrollTop = area.scrollHeight;
     }
+    // ... نفس الإعدادات السابقة لـ SUPABASE_URL و SUPABASE_KEY ...
 
     async function handleMessageSubmit(e) {
         if(e) e.preventDefault();
@@ -224,75 +225,60 @@
             cancelFile();
         }
 
-        // إرسال الرسالة
-        const { error } = await supabaseClient.from('messages').insert([{
-            ticket_id: currentTicketId,
-            message_text: text || "📎 ملف مرفق",
-            sender_id: currentUserId,
-            file_url: url,
-            message_type: type
+        try {
+            // 1. إرسال الرسالة أولاً لضمان وجود محتوى
+            const { error: msgError } = await supabaseClient.from('messages').insert([{
+                ticket_id: currentTicketId,
+                message_text: text || "📎 ملف مرفق",
+                sender_id: currentUserId,
+                file_url: url,
+                message_type: type
+            }]);
+
+            if (msgError) throw msgError;
+
+            // 2. جلب العداد الحالي وزيادته (لضمان ظهور النقطة الخضراء)
+            const { data: ticketData } = await supabaseClient
+                .from('tickets')
+                .select('unread_count')
+                .eq('id', currentTicketId)
+                .single();
+
+            const newUnreadCount = (ticketData?.unread_count || 0) + 1;
+
+            // 3. تحديث التذكرة (الوقت + العداد) - هذا ما سيجعلها تقفز للأعلى عند الأدمن
+            const { error: ticketError } = await supabaseClient
+                .from('tickets')
+                .update({ 
+                    updated_at: now, 
+                    unread_count: newUnreadCount 
+                })
+                .eq('id', currentTicketId);
+
+            if (ticketError) throw ticketError;
+
+            input.value = '';
+        } catch (err) {
+            console.error("خطأ في المزامنة:", err.message);
+        }
+    }
+
+    // تأكد من تحديث دالة الصوت أيضاً بنفس المنطق
+    async function updateTicketAfterVoice(url) {
+        const now = new Date().toISOString();
+        await supabaseClient.from('messages').insert([{ 
+            ticket_id: currentTicketId, 
+            sender_id: currentUserId, 
+            file_url: url, 
+            message_type: 'voice' 
         }]);
 
-        if (!error) {
-            // تحديث التذكرة: زيادة العداد وتغيير الوقت للترتيب
-            const { data: ticket } = await supabaseClient.from('tickets').select('unread_count').eq('id', currentTicketId).single();
-            await supabaseClient.from('tickets').update({ 
-                updated_at: now, 
-                unread_count: (ticket?.unread_count || 0) + 1 
-            }).eq('id', currentTicketId);
-            input.value = '';
-        }
+        const { data: ticketData } = await supabaseClient.from('tickets').select('unread_count').eq('id', currentTicketId).single();
+        await supabaseClient.from('tickets').update({ 
+            updated_at: now, 
+            unread_count: (ticketData?.unread_count || 0) + 1 
+        }).eq('id', currentTicketId);
     }
-
-    async function toggleRecording() {
-        const btn = document.getElementById('voiceBtn');
-        if (!mediaRecorder || mediaRecorder.state === "inactive") {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
-            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-            mediaRecorder.onstop = async () => {
-                const now = new Date().toISOString();
-                const file = new File([new Blob(audioChunks)], `v_${Date.now()}.mp3`, { type: 'audio/mpeg' });
-                const url = await uploadFile(file);
-                
-                const { error } = await supabaseClient.from('messages').insert([{ ticket_id: currentTicketId, sender_id: currentUserId, file_url: url, message_type: 'voice' }]);
-                if (!error) {
-                    const { data: ticket } = await supabaseClient.from('tickets').select('unread_count').eq('id', currentTicketId).single();
-                    await supabaseClient.from('tickets').update({ updated_at: now, unread_count: (ticket?.unread_count || 0) + 1 }).eq('id', currentTicketId);
-                }
-            };
-            mediaRecorder.start();
-            btn.classList.add('recording-active');
-        } else {
-            mediaRecorder.stop();
-            btn.classList.remove('recording-active');
-        }
-    }
-
-    async function uploadFile(file) {
-        const path = `chat/${Date.now()}_${file.name}`;
-        await supabaseClient.storage.from('chat-attachments').upload(path, file);
-        return supabaseClient.storage.from('chat-attachments').getPublicUrl(path).data.publicUrl;
-    }
-
-    function handleFileSelect(i) { if(i.files[0]){ selectedFile=i.files[0]; document.getElementById('filePreview').classList.remove('hidden'); document.getElementById('fileName').innerText=selectedFile.name; } }
-    function cancelFile() { selectedFile=null; document.getElementById('filePreview').classList.add('hidden'); document.getElementById('fileInput').value=''; }
-
-    function setupRealtimeGlobal() {
-        supabaseClient.channel('client_sync')
-            .on('postgres_changes', { event: 'INSERT', table: 'messages' }, (payload) => {
-                if (payload.new.ticket_id === currentTicketId) {
-                    if (payload.new.sender_id !== currentUserId) sounds.incoming.play().catch(() => {});
-                    loadMessages(currentTicketId, document.getElementById('chatHeader').innerText);
-                }
-                fetchMyTickets(currentUserId);
-            })
-            .on('postgres_changes', { event: 'UPDATE', table: 'tickets' }, () => fetchMyTickets(currentUserId))
-            .subscribe();
-    }
-
-    window.onload = checkUser;
 </script>
 </body>
 </html>
