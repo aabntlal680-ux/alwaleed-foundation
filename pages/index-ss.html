@@ -23,7 +23,6 @@
     
     <div id="authSection" class="bg-white p-6 rounded-lg shadow-md max-w-md mx-auto my-10 border-t-4 border-blue-600">
         <h2 class="text-xl font-bold text-center mb-6 text-blue-900">تواصل مع فريق الدعم</h2>
-        
         <button onclick="handleGoogleLogin()" class="w-full mb-3 flex items-center justify-center gap-2 border border-gray-300 bg-white py-2 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition shadow-sm">
             <svg class="w-5 h-5" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -33,10 +32,6 @@
             </svg>
             الدخول عبر جوجل
         </button>
-
-        <!-- <button onclick="handleGuestLogin()" class="w-full mb-4 bg-slate-800 text-white py-2 rounded-lg font-bold hover:bg-slate-900 transition shadow-md flex items-center justify-center gap-2">
-            <span>🚀 دخول سريع (بدون حساب)</span>
-        </button> -->
 
         <div class="relative flex items-center justify-center mb-6">
             <div class="w-full border-t border-gray-200"></div>
@@ -69,7 +64,7 @@
                     <option value="استفسار">استفسار عام</option>
                     <option value="شكوى">تقديم شكوى</option>
                 </select>
-                <input type="text" id="newTicketSubject" placeholder="اكتب اسمك أو موضوع الطلب..." class="border rounded-lg px-3 py-2 text-sm outline-none">
+                <input type="text" id="newTicketSubject" placeholder="اكتب موضوع الطلب..." class="border rounded-lg px-3 py-2 text-sm outline-none">
                 <button onclick="createNewTicket()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition">فتح التذكرة</button>
             </div>
         </div>
@@ -123,38 +118,22 @@
     let audioChunks = [];
     let currentUserId = null;
 
-    // --- 1. إدارة الهوية والدخول ---
-        // --- 1. إدارة الهوية والدخول ---
-    // --- 1. إدارة الهوية والدخول المحدثة ---
-async function checkUser() {
-    // جلب المستخدم الحالي
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    
-    const MY_ADMIN_ID = '07faacef-7438-4b39-a4f7-2240563a77ac';
+    async function checkUser() {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        const MY_ADMIN_ID = '07faacef-7438-4b39-a4f7-2240563a77ac';
 
-    if (user) {
-        // إذا كنت أنت الآدمن، انتقل فوراً
-        if (user.id === MY_ADMIN_ID) {
-            window.location.replace('index-admn.html');
-            return; 
+        if (user) {
+            if (user.id === MY_ADMIN_ID) {
+                window.location.replace('index-admn.html');
+                return; 
+            }
+            currentUserId = user.id;
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
+            fetchMyTickets(user.id);
+            setupRealtimeGlobal();
         }
-
-        // للمستخدم العادي
-        currentUserId = user.id;
-        document.getElementById('authSection').classList.add('hidden');
-        document.getElementById('mainContent').classList.remove('hidden');
-        fetchMyTickets(user.id);
-        setupRealtimeGlobal();
     }
-}
-
-// أضف هذا الجزء أيضاً لضمان التوجيه عند "تغيير" حالة الدخول (مثل لحظة ضغط زر جوجل)
-supabaseClient.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_IN' && session?.user?.id === '07faacef-7438-4b39-a4f7-2240563a77ac') {
-        window.location.replace('index-admn.html');
-    }
-});
-
 
     async function handleGoogleLogin() {
         const { error } = await supabaseClient.auth.signInWithOAuth({
@@ -164,63 +143,37 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
         if (error) alert("خطأ جوجل: " + error.message);
     }
 
-    async function handleGuestLogin() {
-        const { data, error } = await supabaseClient.auth.signInAnonymously();
-        if (error) alert(error.message); else checkUser();
-    }
-
     async function handleLogout() {
         await supabaseClient.auth.signOut();
         window.location.reload();
     }
 
-    // --- 2. إدارة التذاكر (الفتح الذكي والدمج) ---
     async function createNewTicket() {
         const subInput = document.getElementById('newTicketSubject');
         const sub = subInput.value.trim();
         const cat = document.getElementById('ticketCategory').value;
-        
         if(!sub) return alert("يرجى كتابة عنوان للتذكرة");
 
-        // الفحص: هل يوجد تذكرة سابقة؟
-        const { data: existingTickets } = await supabaseClient
-            .from('tickets')
-            .select('*')
-            .eq('user_id', currentUserId)
-            .order('updated_at', { ascending: false })
-            .limit(1);
+        const { data: existing } = await supabaseClient.from('tickets').select('*').eq('user_id', currentUserId).order('updated_at', { ascending: false }).limit(1);
 
-        if (existingTickets && existingTickets.length > 0) {
-            // توجيه للتذكرة القديمة
-            const lastTicket = existingTickets[0];
-            loadMessages(lastTicket.id, lastTicket.subject);
-            alert("لديك تذكرة نشطة بالفعل، تم توجيهك إليها.");
+        if (existing && existing.length > 0) {
+            loadMessages(existing[0].id, existing[0].subject);
+            alert("لديك تذكرة نشطة بالفعل.");
             subInput.value = '';
         } else {
-            // إنشاء تذكرة جديدة تماماً
-            const { data: newTicket, error: createError } = await supabaseClient.from('tickets').insert([{ 
-                subject: `[${cat}] ${sub}`, 
-                user_id: currentUserId 
-            }]).select();
-
-            if(!createError) {
+            const { data: newT, error } = await supabaseClient.from('tickets').insert([{ subject: `[${cat}] ${sub}`, user_id: currentUserId, unread_count: 1 }]).select();
+            if(!error) {
                 subInput.value = '';
                 fetchMyTickets(currentUserId);
-                loadMessages(newTicket[0].id, newTicket[0].subject);
-                sounds.action.play().catch(() => {});
+                loadMessages(newT[0].id, newT[0].subject);
             }
         }
     }
 
     async function fetchMyTickets(userId) {
-        const { data: tickets } = await supabaseClient
-            .from('tickets')
-            .select('*')
-            .eq('user_id', userId)
-            .order('updated_at', { ascending: false });
-
+        const { data: tickets } = await supabaseClient.from('tickets').select('*').eq('user_id', userId).order('updated_at', { ascending: false });
         const list = document.getElementById('ticketsList');
-        if (list && data) {
+        if (list && tickets) {
             list.innerHTML = tickets.map(t => `
                 <div onclick="loadMessages('${t.id}', '${t.subject}')" class="p-3 border rounded-lg cursor-pointer hover:bg-blue-50 mb-2 transition bg-white shadow-sm border-r-4 ${currentTicketId === t.id ? 'border-blue-600 bg-blue-50' : 'border-gray-200'}">
                     <div class="text-sm font-bold truncate text-slate-700">${t.subject}</div>
@@ -230,68 +183,33 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
         }
     }
 
-    // --- 3. المحادثة والمزامنة اللحظية ---
     async function loadMessages(ticketId, subject) {
         currentTicketId = ticketId;
-        sounds.action.play().catch(() => {});
         document.getElementById('chatHeader').innerText = subject;
-        ['messageInput', 'sendBtn', 'fileInput', 'voiceBtn'].forEach(id => {
-            const el = document.getElementById(id);
-            if(el) el.disabled = false;
-        });
+        ['messageInput', 'sendBtn', 'fileInput', 'voiceBtn'].forEach(id => document.getElementById(id).disabled = false);
 
-        const { data: messages } = await supabaseClient
-            .from('messages')
-            .select('*')
-            .eq('ticket_id', ticketId)
-            .order('created_at', { ascending: true });
-        
+        const { data: messages } = await supabaseClient.from('messages').select('*').eq('ticket_id', ticketId).order('created_at', { ascending: true });
         renderMessages(messages);
     }
 
     function renderMessages(messages) {
         const area = document.getElementById('messagesArea');
         area.innerHTML = '';
-        messages?.forEach(msg => appendSingleMessage(msg));
+        messages?.forEach(msg => {
+            const isMe = msg.sender_id === currentUserId;
+            const div = document.createElement('div');
+            div.className = `max-w-[85%] p-3 rounded-2xl shadow-sm mb-2 ${isMe ? 'bg-blue-600 text-white self-end rounded-tr-none' : 'bg-white text-gray-800 self-start border rounded-tl-none'}`;
+            let content = '';
+            if (msg.message_type === 'image') content += `<img src="${msg.file_url}" class="rounded-lg mb-1 max-w-full h-auto">`;
+            else if (msg.message_type === 'voice') content += `<audio controls class="w-full max-w-[200px] h-8 mb-1"><source src="${msg.file_url}"></audio>`;
+            else if (msg.file_url) content += `<a href="${msg.file_url}" target="_blank" class="text-xs underline block mb-1">📎 مرفق</a>`;
+            if (msg.message_text) content += `<p class="text-sm">${msg.message_text}</p>`;
+            div.innerHTML = content;
+            area.appendChild(div);
+        });
         area.scrollTop = area.scrollHeight;
     }
 
-    function appendSingleMessage(msg) {
-        const area = document.getElementById('messagesArea');
-        const isMe = msg.sender_id === currentUserId;
-        const div = document.createElement('div');
-        div.className = `max-w-[85%] p-3 rounded-2xl shadow-sm mb-2 ${isMe ? 'bg-blue-600 text-white self-end rounded-tr-none' : 'bg-white text-gray-800 self-start border rounded-tl-none'}`;
-        
-        let content = '';
-        if (msg.message_type === 'image') content += `<img src="${msg.file_url}" class="rounded-lg mb-1 max-w-full h-auto cursor-pointer" onclick="window.open('${msg.file_url}')">`;
-        else if (msg.message_type === 'voice') content += `<audio controls class="w-full max-w-[200px] h-8 mb-1"><source src="${msg.file_url}"></audio>`;
-        else if (msg.file_url) content += `<a href="${msg.file_url}" target="_blank" class="text-xs underline block mb-1">📎 مرفق</a>`;
-        
-        if (msg.message_text) content += `<p class="text-sm">${msg.message_text}</p>`;
-        div.innerHTML = content;
-        area.appendChild(div);
-        area.scrollTop = area.scrollHeight;
-    }
-
-    function setupRealtimeGlobal() {
-        supabaseClient.channel('public:messages')
-            .on('postgres_changes', { event: 'INSERT', table: 'messages' }, (payload) => {
-                if (payload.new.sender_id !== currentUserId) {
-                    sounds.incoming.play().catch(() => {});
-                }
-                if (currentTicketId && payload.new.ticket_id === currentTicketId) {
-                    appendSingleMessage(payload.new);
-                }
-                // تحديث القائمة لترتيب التذاكر بالأحدث دائماً
-                fetchMyTickets(currentUserId);
-            })
-            .on('postgres_changes', { event: 'UPDATE', table: 'tickets' }, () => {
-                fetchMyTickets(currentUserId);
-            })
-            .subscribe();
-    }
-
-    // --- 4. إرسال الرسائل (نص، صوت، ملفات) ---
     async function handleMessageSubmit(e) {
         if(e) e.preventDefault();
         const input = document.getElementById('messageInput');
@@ -306,19 +224,24 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
             cancelFile();
         }
 
-        // تحديث الرسالة وتوقيت التذكرة معاً
-        await Promise.all([
-            supabaseClient.from('messages').insert([{
-                ticket_id: currentTicketId,
-                message_text: text || "📎 ملف مرفق",
-                sender_id: currentUserId,
-                file_url: url,
-                message_type: type
-            }]),
-            supabaseClient.from('tickets').update({ updated_at: now }).eq('id', currentTicketId)
-        ]);
+        // إرسال الرسالة
+        const { error } = await supabaseClient.from('messages').insert([{
+            ticket_id: currentTicketId,
+            message_text: text || "📎 ملف مرفق",
+            sender_id: currentUserId,
+            file_url: url,
+            message_type: type
+        }]);
 
-        input.value = '';
+        if (!error) {
+            // تحديث التذكرة: زيادة العداد وتغيير الوقت للترتيب
+            const { data: ticket } = await supabaseClient.from('tickets').select('unread_count').eq('id', currentTicketId).single();
+            await supabaseClient.from('tickets').update({ 
+                updated_at: now, 
+                unread_count: (ticket?.unread_count || 0) + 1 
+            }).eq('id', currentTicketId);
+            input.value = '';
+        }
     }
 
     async function toggleRecording() {
@@ -333,10 +256,11 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
                 const file = new File([new Blob(audioChunks)], `v_${Date.now()}.mp3`, { type: 'audio/mpeg' });
                 const url = await uploadFile(file);
                 
-                await Promise.all([
-                    supabaseClient.from('messages').insert([{ ticket_id: currentTicketId, sender_id: currentUserId, file_url: url, message_type: 'voice' }]),
-                    supabaseClient.from('tickets').update({ updated_at: now }).eq('id', currentTicketId)
-                ]);
+                const { error } = await supabaseClient.from('messages').insert([{ ticket_id: currentTicketId, sender_id: currentUserId, file_url: url, message_type: 'voice' }]);
+                if (!error) {
+                    const { data: ticket } = await supabaseClient.from('tickets').select('unread_count').eq('id', currentTicketId).single();
+                    await supabaseClient.from('tickets').update({ updated_at: now, unread_count: (ticket?.unread_count || 0) + 1 }).eq('id', currentTicketId);
+                }
             };
             mediaRecorder.start();
             btn.classList.add('recording-active');
@@ -355,8 +279,20 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
     function handleFileSelect(i) { if(i.files[0]){ selectedFile=i.files[0]; document.getElementById('filePreview').classList.remove('hidden'); document.getElementById('fileName').innerText=selectedFile.name; } }
     function cancelFile() { selectedFile=null; document.getElementById('filePreview').classList.add('hidden'); document.getElementById('fileInput').value=''; }
 
+    function setupRealtimeGlobal() {
+        supabaseClient.channel('client_sync')
+            .on('postgres_changes', { event: 'INSERT', table: 'messages' }, (payload) => {
+                if (payload.new.ticket_id === currentTicketId) {
+                    if (payload.new.sender_id !== currentUserId) sounds.incoming.play().catch(() => {});
+                    loadMessages(currentTicketId, document.getElementById('chatHeader').innerText);
+                }
+                fetchMyTickets(currentUserId);
+            })
+            .on('postgres_changes', { event: 'UPDATE', table: 'tickets' }, () => fetchMyTickets(currentUserId))
+            .subscribe();
+    }
+
     window.onload = checkUser;
 </script>
-
 </body>
 </html>
