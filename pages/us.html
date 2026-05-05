@@ -230,12 +230,84 @@
             transform: translateY(0);
         }
 
-    .footer {
-      text-align: center;
-      padding: 40px 20px;
-      color: #666;
-      font-size: 0.9rem;
-      border-top: 1px solid #ddd;
+    .main-footer {
+        background-color: #0f172a; /* الوضع الداكن */
+        color: #f1f5f9;
+        padding: 50px 20px 20px;
+        border-top: 4px solid #38bdf8; /* الخط الأزرق السماوي */
+        font-family: 'Cairo', sans-serif;
+    }
+
+    .footer-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .footer-section {
+        margin-bottom: 30px;
+        width: 100%;
+    }
+
+    .footer-section h3 {
+        color: #38bdf8;
+        margin-bottom: 20px;
+        font-size: 1.2rem;
+    }
+
+    .contact-links, .links-grid {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        flex-wrap: wrap;
+    }
+
+    .contact-item, .links-grid a {
+        color: #94a3b8;
+        text-decoration: none;
+        transition: 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .contact-item i {
+        color: #38bdf8;
+        font-size: 1.2rem;
+    }
+
+    .contact-item:hover, .links-grid a:hover {
+        color: #fff;
+        transform: translateY(-3px);
+    }
+
+    .footer-divider {
+        width: 100%;
+        height: 1px;
+        background: rgba(148, 163, 184, 0.2);
+        margin: 20px 0;
+    }
+
+    .footer-bottom {
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+    .footer-bottom .branding {
+        margin-top: 5px;
+        font-size: 0.8rem;
+        opacity: 0.7;
+    }
+
+    /* تحسين للجوال */
+    @media (max-width: 600px) {
+        .contact-links, .links-grid {
+            flex-direction: column;
+            gap: 15px;
+        }
     }
 
     .whatsapp-float {
@@ -360,23 +432,45 @@
   
       <div style="height: 50px;"></div>
 
-  <footer>
-      <div style="text-align: center;">
-          <p>تواصل معنا واتساب: <a href="https://wa.me/966567232680" style="color: var(--primary-green);">+966567232680</a></p>
-          <div style="height: 30px;"></div>
-          <p>تواصل معنا عبر البريد: <a href="mailto:aabntlal680@gmail.com" style="color: var(--primary-green);">aabntlal680@gmail.com</a></p>
-          <div style="height: 30px;"></div>
-          <p style="margin-top: 10px; font-size: 0.8rem; color: #777;">جميع الحقوق محفوظة-مؤسسة الوليد الإنسانية لعام 2026</p>
-          <div style="height: 30px;"></div>
-      </div>
-  </footer>
+  <footer class="main-footer">
+    <div class="footer-container">
+        
+        <div class="footer-section contact-info">
+            <h3>تواصل معنا</h3>
+            <div class="contact-links">
+                <a href="mailto:support@alwaleed.com" class="contact-item">
+                    <i class="fas fa-envelope"></i> البريد الإلكتروني
+                </a>
+                <a href="https://wa.me/your-number" class="contact-item">
+                    <i class="fab fa-whatsapp"></i> واتساب الدعم
+                </a>
+            </div>
+        </div>
+
+        <div class="footer-section legal-links">
+            <h3>الروابط القانونية</h3>
+            <div class="links-grid">
+                <a href="pages/privacy-policy.html">سياسة الخصوصية</a>
+                <a href="pages/terms.html">شروط الاستخدام</a>
+            </div>
+        </div>
+
+        <div class="footer-divider"></div>
+
+        <div class="footer-bottom">
+            <p>جميع حقوق النشر والطبع محفوظة لمؤسسة الوليد &copy; 2026</p>
+            <p class="branding">تم تطويره بكل فخر لمستقبل إنساني أفضل</p>
+        </div>
+    </div>
+</footer>
+
   
-  <button onclick="toggleWhatsAppModal()" class="whatsapp-float">
+  ``<button onclick="toggleWhatsAppModal()" class="whatsapp-float">
         <i class="fab fa-whatsapp"></i>
-   </button>
+   </button>``
 
    
-    <div id="whatsappModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
+    ``<div id="whatsappModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
     <div style="background: white; width: 90%; max-width: 400px; border-radius: 15px; overflow: hidden; font-family: sans-serif;">
         <div style="background: #25d366; color: white; padding: 15px; text-align: center; font-weight: bold;">
             صندوق الشكاوي والملاحظات
@@ -392,7 +486,7 @@
             </button>
         </div>
     </div>
-</div>
+</div>``
 
    <script type="module">
   // 1. استيراد المكتبات اللازمة من Firebase
