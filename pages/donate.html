@@ -88,90 +88,88 @@
         .btn-crypto { background-color: #F3BA2F; color: #1a2522; width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
         .main-footer {
-        background-color: #0f172a; /* الوضع الداكن */
-        color: #f1f5f9;
-        padding: 50px 20px 20px;
-        border-top: 4px solid #38bdf8; /* الخط الأزرق السماوي */
-        font-family: 'Cairo', sans-serif;
-    }
-
-    .footer-container {
-        max-width: 1100px;
-        margin: 0 auto;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-
-    .footer-section {
-        margin-bottom: 30px;
-        width: 100%;
-    }
-
-    .footer-section h3 {
-        color: #38bdf8;
-        margin-bottom: 20px;
-        font-size: 1.2rem;
-    }
-
-    .contact-links, .links-grid {
-        display: flex;
-        justify-content: center;
-        gap: 30px;
-        flex-wrap: wrap;
-    }
-
-    .contact-item, .links-grid a {
-        color: #94a3b8;
-        text-decoration: none;
-        transition: 0.3s;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .contact-item i {
-        color: #38bdf8;
-        font-size: 1.2rem;
-    }
-
-    .contact-item:hover, .links-grid a:hover {
-        color: #fff;
-        transform: translateY(-3px);
-    }
-
-    .footer-divider {
-        width: 100%;
-        height: 1px;
-        background: rgba(148, 163, 184, 0.2);
-        margin: 20px 0;
-    }
-
-    .footer-bottom {
-        color: #64748b;
-        font-size: 0.9rem;
-    }
-
-    .footer-bottom .branding {
-        margin-top: 5px;
-        font-size: 0.8rem;
-        opacity: 0.7;
-    }
-
-    /* تحسين للجوال */
-    @media (max-width: 600px) {
-        .contact-links, .links-grid {
-            flex-direction: column;
-            gap: 15px;
+            background-color: #0f172a; /* الوضع الداكن */
+            color: #f1f5f9;
+            padding: 50px 20px 20px;
+            border-top: 4px solid #38bdf8; /* الخط الأزرق السماوي */
+            font-family: 'Cairo', sans-serif;
         }
-    }
-        
+
+        .footer-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .footer-section {
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        .footer-section h3 {
+            color: #38bdf8;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+
+        .contact-links, .links-grid {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .contact-item, .links-grid a {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .contact-item i {
+            color: #38bdf8;
+            font-size: 1.2rem;
+        }
+
+        .contact-item:hover, .links-grid a:hover {
+            color: #fff;
+            transform: translateY(-3px);
+        }
+
+        .footer-divider {
+            width: 100%;
+            height: 1px;
+            background: rgba(148, 163, 184, 0.2);
+            margin: 20px 0;
+        }
+
+        .footer-bottom {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .footer-bottom .branding {
+            margin-top: 5px;
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        /* تحسين للجوال */
+        @media (max-width: 600px) {
+            .contact-links, .links-grid {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    
     
     <header>
         <div class="logo reveal"></div>
@@ -238,59 +236,56 @@
         </form>
     </div>
 
-<div style="height: 30px;"></div> 
+    <div style="height: 30px;"></div> 
 
     <footer class="main-footer">
-    <div class="footer-container">
-        
-        <div class="footer-section contact-info">
-            <h3>تواصل معنا</h3>
-            <div class="contact-links">
-                <a href="mailto:support@alwaleed.com" class="contact-item">
-                    <i class="fas fa-envelope"></i> البريد الإلكتروني
-                </a>
-                <a href="https://wa.me/your-number" class="contact-item">
-                    <i class="fab fa-whatsapp"></i> واتساب الدعم
-                </a>
+        <div class="footer-container">
+            <div class="footer-section contact-info">
+                <h3>تواصل معنا</h3>
+                <div class="contact-links">
+                    <a href="mailto:support@alwaleed.com" class="contact-item">
+                        <i class="fas fa-envelope"></i> البريد الإلكتروني
+                    </a>
+                    <a href="https://wa.me/your-number" class="contact-item">
+                        <i class="fab fa-whatsapp"></i> واتساب الدعم
+                    </a>
+                </div>
+            </div>
+
+            <div class="footer-section legal-links">
+                <h3>الروابط القانونية</h3>
+                <div class="links-grid">
+                    <a href="privacy-policy.html">سياسة الخصوصية</a>
+                    <a href="terms.html">شروط الاستخدام</a>
+                </div>
+            </div>
+
+            <div class="footer-divider"></div>
+
+            <div class="footer-bottom">
+                <p>جميع حقوق النشر والطبع محفوظة لمؤسسة الوليد &copy; 2026</p>
+                <p class="branding">تم تطويره بكل فخر لمستقبل إنساني أفضل</p>
             </div>
         </div>
+    </footer>
 
-        <div class="footer-section legal-links">
-            <h3>الروابط القانونية</h3>
-            <div class="links-grid">
-                <a href="privacy-policy.html">سياسة الخصوصية</a>
-                <a href="terms.html">شروط الاستخدام</a>
-            </div>
-        </div>
-
-        <div class="footer-divider"></div>
-
-        <div class="footer-bottom">
-            <p>جميع حقوق النشر والطبع محفوظة لمؤسسة الوليد &copy; 2026</p>
-            <p class="branding">تم تطويره بكل فخر لمستقبل إنساني أفضل</p>
-        </div>
-    </div>
-</footer>
-
-
-   
     <div id="whatsappModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
-    <div style="background: white; width: 90%; max-width: 400px; border-radius: 15px; overflow: hidden; font-family: sans-serif;">
-        <div style="background: #25d366; color: white; padding: 15px; text-align: center; font-weight: bold;">
-            صندوق الشكاوي والملاحظات
-        </div>
-        <div style="padding: 15px;">    
-            <button id="btn-main" style="width: 100%; background: #32CD32; color: white; border: 1px; padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer; align-items: center;"><a href="pages/us.html" style="font-weight: bold;">طلب مساعدة</a></button>
-            <button id="btn-main" style="width: 100%; background: #32CD32; color: white; border: 1px; padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer; align-items: center;"><a href="pages/donate.html" style="font-weight: bold;">طلب تبرع</a></button>
-            
-               <textarea id="userNote" rows="2" style="width: 100%; border: 1.5px solid #ddd; border-radius: 8px; padding: 12px; text-align: center; margin-top: 15px; direction: rtl;" placeholder="اكتب ملاحظتك هنا..."></textarea>
-            <button id="btn-main" style="width: 100%; background: #98FB98; color: blacke; border: none; padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer;"><a href="pages/index-ss.html">تواصل مع فريق ال</a></button>
-            <button onclick="toggleWhatsAppModal()" style="width: 100%; background: #eee; color: #333; border: none; padding: 8px; border-radius: 8px; margin-top: 10px; cursor: pointer;">
-                إلغاء
-            </button>
+        <div style="background: white; width: 90%; max-width: 400px; border-radius: 15px; overflow: hidden; font-family: sans-serif;">
+            <div style="background: #25d366; color: white; padding: 15px; text-align: center; font-weight: bold;">
+                صندوق الشكاوي والملاحظات
+            </div>
+            <div style="padding: 15px;">    
+                <button id="btn-main1" style="width: 100%; background: #32CD32; color: white; border: 1px; padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer; align-items: center;"><a href="pages/us.html" style="font-weight: bold; color: white; text-decoration: none;">طلب مساعدة</a></button>
+                <button id="btn-main2" style="width: 100%; background: #32CD32; color: white; border: 1px; padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer; align-items: center;"><a href="pages/donate.html" style="font-weight: bold; color: white; text-decoration: none;">طلب تبرع</a></button>
+                
+                <textarea id="userNote" rows="2" style="width: 100%; border: 1.5px solid #ddd; border-radius: 8px; padding: 12px; text-align: center; margin-top: 15px; direction: rtl;" placeholder="اكتب ملاحظتك هنا..."></textarea>
+                <button id="btn-main3" style="width: 100%; background: #98FB98; color: black; border: none; padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer;"><a href="pages/index-ss.html" style="color: black; text-decoration: none;">تواصل مع فريق ال</a></button>
+                <button onclick="toggleWhatsAppModal()" style="width: 100%; background: #eee; color: #333; border: none; padding: 8px; border-radius: 8px; margin-top: 10px; cursor: pointer;">
+                    إلغاء
+                </button>
+            </div>
         </div>
     </div>
-</div>``
 
     <script>
         function switchMethod(method) {
@@ -307,7 +302,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // تم استدعاء الـ query والـ where والـ getDocs لتمكين فحص قاعدة البيانات بنجاح
+        import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC1-J4dSTmxUnz5d7dVq9XWrRHf_Lr511M",
@@ -322,26 +318,48 @@
         const db = getFirestore(app);
 
         document.getElementById('sendWhatsapp').onclick = async function() {
-            const name = document.getElementById('name').value;
+            const name = document.getElementById('name').value.trim();
             const amount = document.getElementById('amount').value;
             const currency = document.getElementById('currency').value;
             const nationality = document.getElementById('nationality').value;
             const method = document.querySelector('.method-btn.active').innerText;
 
+            // 1. التحقق من ملء البيانات الأساسية
             if (!name || !amount || !nationality) {
                 alert("يرجى ملء كافة البيانات أولاً");
                 return;
             }
 
+            // 2. الفحص الأول المحلي: التحقق مما إذا كان قد تم الإرسال من هذا الجهاز مسبقاً
+            if (localStorage.getItem('hasDonated')) {
+                alert("عذراً، لقد قمت بتقديم طلب تبرع مسبقاً من هذا الجهاز.");
+                return;
+            }
+
             try {
+                // 3. الفحص الثاني السحابي: التحقق من وجود الاسم في Firestore لمنع التكرار
+                const q = query(collection(db, "donations"), where("name", "==", name));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    alert("هذا الاسم مسجل لدينا بالفعل في طلب سابق. لا يمكن تكرار الطلب بنفس الاسم.");
+                    return;
+                }
+
+                // 4. حفظ الطلب في Firestore في حال اجتياز شروط الحماية
                 await addDoc(collection(db, "donations"), {
                     name, amount: Number(amount), currency, nationality, method, date: new Date().toISOString()
                 });
                 
+                // 5. تفعيل علامة الحظر المحلّي في المتصفح بعد الحفظ الناجح
+                localStorage.setItem('hasDonated', 'true');
+
+                // 6. التوجيه إلى تطبيق الواتساب
                 const adminPhone = "966567232680";
                 const message = `*طلب تقديم تبرع جديد* 🕊️\n\n*الاسم:* ${name}\n*الجنسية:* ${nationality}\n*المبلغ:* ${amount} ${currency}\n*الوسيلة:* ${method}\n\n_يرجى تزويدي بالبيانات اللازمة._`;
                 window.location.href = `https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`;
             } catch (e) {
+                console.error(e);
                 alert("حدث خطأ في الاتصال");
             }
         };
