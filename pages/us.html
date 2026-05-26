@@ -191,28 +191,6 @@
       text-align: center;
     }
     
-    .whatsapp-float {
-      position: fixed;
-      bottom: 30px;
-      left: 30px;
-      background-color: #25D366;
-      color: white;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 30px;
-      box-shadow: 2px 5px 15px rgba(0,0,0,0.2);
-      z-index: 1000;
-      text-decoration: none;
-      transition: 0.3s;
-    }
-    .whatsapp-float:hover {
-      transform: scale(1.1);
-    }
-    
     .reveal {
             opacity: 0;
             transform: translateY(40px);
@@ -311,7 +289,7 @@
     }
 
     .whatsapp-float {
-      position: fixed
+      position: fixed;
       bottom: 30px;
       left: 30px;
       background-color: #25D366;
@@ -415,7 +393,7 @@
             <option value="مالية">مالية</option>
             <option value="سكنية">توفير وحدات سكنية</option>
             <option value="سيارات">طلب وسيلة نقل</option>
-            <option value="اخرى">شرح مشكلتك في الملاحضة ادناة</option></option>
+            <option value="اخرى">شرح مشكلتك في الملاحضة ادناة</option>
           </select>
         </div>
 
@@ -464,36 +442,33 @@
     </div>
 </footer>
 
-  
-  ``<button onclick="toggleWhatsAppModal()" class="whatsapp-float">
+  <button onclick="toggleWhatsAppModal()" class="whatsapp-float">
         <i class="fab fa-whatsapp"></i>
-   </button>``
+   </button>
 
-   
-    ``<div id="whatsappModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
+    <div id="whatsappModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
     <div style="background: white; width: 90%; max-width: 400px; border-radius: 15px; overflow: hidden; font-family: sans-serif;">
         <div style="background: #25d366; color: white; padding: 15px; text-align: center; font-weight: bold;">
             صندوق الشكاوي والملاحظات
         </div>
         <div style="padding: 15px;">    
-            <button id="btn-main" style="width: 100%; background: #32CD32; color: white; border: 1px; padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer; align-items: center;"><a href="pages/us.html" style="font-weight: bold;">طلب مساعدة</a></button>
-            <button id="btn-main" style="width: 100%; background: #32CD32; color: white; border: 1px; padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer; align-items: center;"><a href="pages/donate.html" style="font-weight: bold;">طلب تبرع</a></button>
+            <button style="width: 100%; background: #32CD32; color: white; border: 1px; padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer; align-items: center;"><a href="pages/us.html" style="font-weight: bold; color: white; text-decoration: none;">طلب مساعدة</a></button>
+            <button style="width: 100%; background: #32CD32; color: white; border: 1px; padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer; align-items: center;"><a href="pages/donate.html" style="font-weight: bold; color: white; text-decoration: none;">طلب تبرع</a></button>
             
                <textarea id="userNote" rows="2" style="width: 100%; border: 1.5px solid #ddd; border-radius: 8px; padding: 12px; text-align: center; margin-top: 15px; direction: rtl;" placeholder="اكتب ملاحظتك هنا..."></textarea>
-            <button id="btn-main" style="width: 100%; background: #98FB98; color: blacke; border: none; padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer;"><a href="pages/index-ss.html">تواصل مع فريق ال</a></button>
+            <button onclick="sendToWhatsApp()" style="width: 100%; background: #98FB98; color: black; border: none; padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer;">تواصل مع فريق الدعم</button>
             <button onclick="toggleWhatsAppModal()" style="width: 100%; background: #eee; color: #333; border: none; padding: 8px; border-radius: 8px; margin-top: 10px; cursor: pointer;">
                 إلغاء
             </button>
         </div>
     </div>
-</div>``
+</div>
 
    <script type="module">
-  // 1. استيراد المكتبات اللازمة من Firebase
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  // تم تضمين query, where, getDocs للفحص المزدوج داخل قاعدة البيانات
+  import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  // 2. إعدادات Firebase الخاصة بمشروعك (نفس البيانات المستخدمة في donate.html)
   const firebaseConfig = {
     apiKey: "AIzaSyC1-J4dSTmxUnz5d7dvq9XWrRHf_Lr511M",
     authDomain: "alwaleed-3a813.firebaseapp.com",
@@ -503,11 +478,9 @@
     appId: "1:680698906569:web:154df6466c1c89d67f4a18"
   };
 
-  // 3. تهيئة Firebase و Firestore
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // 4. مصفوفة الدول (اختياري إذا كان لديك Datalist)
   const allCountries = ["أفغانستان", "ألبانيا", "الجزائر", "أندورا", "أنغولا", "أنتيغوا وباربودا", "الأرجنتين", "أرمينيا", "أستراليا", "النمسا", "أذربيجان", "الباهاما", "البحرين", "بنجلاديش", "باربادوس", "بيلاروسيا", "بلجيكا", "بليز", "بنين", "بوتان", "بوليفيا", "البوسنة والهرسك", "بوتسوانا", "البرازيل", "بروناي", "بلغاريا", "بوركينا فاسو", "بوروندي", "كابو فيردي", "كمبوديا", "الكاميرون", "كندا", "جمهورية أفريقيا الوسطى", "تشاد", "تشيلي", "الصين", "كولومبيا", "جزر القمر", "الكونغو", "كوستاريكا", "كرواتيا", "كوبا", "قبرص", "التشيك", "الدنمارك", "جيبوتي", "دومينيكا", "جمهورية الدومينيكان", "تيمور الشرقية", "الإكوادور", "مصر", "السلفادور", "غينيا الاستوائية", "إريتريا", "إستونيا", "إثيوبيا", "فيجي", "فنلندا", "فرنسا", "الغابون", "غامبيا", "جورجيا", "ألمانيا", "غانا", "اليونان", "غرينادا", "غواتيمالا", "غينيا", "غينيا بيساو", "غويانا", "هايتي", "هندوراس", "المجر", "آيسلندا", "الهند", "إندونيسيا", "إيران", "العراق", "أيرلندا", "إيطاليا", "جاميكا", "اليابان", "الأردن", "كازاخستان", "كينيا", "كيريباتي", "كوريا الشمالية", "كوريا الجنوبية", "الكويت", "قرغيزستان", "لاوس", "لاتفيا", "لبنان", "ليسوتو", "ليبيريا", "ليبيا", "ليختنشتاين", "ليتوانيا", "لوكسمبورغ", "مدغشقر", "ملاوي", "ماليزيا", "المالديف", "مالي", "مالطا", "جزر مارشال", "موريتانيا", "موريشيوس", "المكسيك", "ميكرونيزيا", "مولدوفا", "موناكو", "منغوليا", "الجبل الأسود", "المغرب", "موزمبيق", "ميانمار", "ناميبيا", "ناورو", "نيبال", "هولندا", "نيوزيلندا", "نيكاراغوا", "النيجر", "نيجيريا", "النرويج", "عمان", "باكستان", "بالاو", "فلسطين", "بنما", "بابوا غينيا الجديدة", "باراغواي", "بيرو", "الفلبين", "بولندا", "البرتغال", "قطر", "رومانيا", "روسيا", "رواندا", "سانت كيتس ونيفيس", "سانت لوسيا", "سانت فينسنت والغرينادين", "ساموا", "سان مارينو", "ساو تومي وبرينسيب", "السعودية", "السنغال", "صربيا", "سيشل", "سيراليون", "سنغافورة", "سلوفاكيا", "سلوفينيا", "جزر سليمان", "الصومال", "جنوب أفريقيا", "جنوب السودان", "إسبانيا", "سريلانكا", "السودان", "سورينام", "سوازيلاند", "السويد", "سويسرا", "سوريا", "تایوان", "طاجيكستان", "تنزانيا", "تايلاند", "توغو", "تونغا", "ترينيداد وتوباغو", "تونس", "تركيا", "تركمانستان", "توفالو", "أوغندا", "أوكرانيا", "الإمارات العربية المتحدة", "بريطانيا", "أمريكا", "أوروغواي", "أوزبكستان", "فانواتو", "الفاتيكان", "فنزويلا", "فيتنام", "اليمن", "زامبيا", "زيمبابوي"];
   const datalist = document.getElementById('countries-list');
   if(datalist) {
@@ -518,31 +491,58 @@
       });
   }
 
-  // 5. منطق زر الإرسال والحفظ في مجموعة "us"
   const sendBtn = document.getElementById('sendBtn');
   if (sendBtn) {
     sendBtn.onclick = async function() {
         const adminPhone = "966567232680";
         
-        // جلب القيم من الحقول
-        const name = document.getElementById('name').value;
-        const phone = document.getElementById('phone').value;
-        const location = document.getElementById('location').value; // الدولة
-        const type = document.getElementById('type').value;         // نوع المساعدة
-        const notes = document.getElementById('notes').value;       // التفاصيل
+        const name = document.getElementById('name').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const location = document.getElementById('location').value; 
+        const type = document.getElementById('type').value;         
+        const notes = document.getElementById('notes').value;       
         const dateISO = new Date().toISOString(); 
 
-        // التحقق من الحقول
         if (!name || !phone || !location || !type || !notes) {
             alert("يرجى إكمال جميع الحقول.");
             return;
         }
 
+        // 1. الفحص الأول: حظر محلي عبر المتصفح لمنع التكرار الفوري من نفس الجهاز
+        if (localStorage.getItem('hasRequestedHelp')) {
+            alert("عذراً، لقد قمت بتقديم طلب مساعدة مسبقاً من هذا الجهاز.");
+            return;
+        }
+
         try {
             sendBtn.disabled = true;
+            sendBtn.innerText = "جاري التحقق الحماية...";
+
+            // 2. الفحص الثاني: فحص Firestore للتأكد من عدم وجود الاسم مسبقاً في مجموعة "us"
+            const nameQuery = query(collection(db, "us"), where("name", "==", name));
+            const nameSnapshot = await getDocs(nameQuery);
+
+            if (!nameSnapshot.empty) {
+                alert("هذا الاسم مسجل لدينا بالفعل في طلب مساعدة سابق.");
+                sendBtn.disabled = false;
+                sendBtn.innerText = "إرسال الطلب عبر واتساب";
+                return;
+            }
+
+            // 3. الفحص الثالث: فحص Firestore للتأكد من عدم وجود رقم الهاتف مسبقاً
+            const phoneQuery = query(collection(db, "us"), where("phone", "==", phone));
+            const phoneSnapshot = await getDocs(phoneQuery);
+
+            if (!phoneSnapshot.empty) {
+                alert("رقم الجوال هذا مسجل لدينا بالفعل في طلب مساعدة سابق.");
+                sendBtn.disabled = false;
+                sendBtn.innerText = "إرسال الطلب عبر واتساب";
+                return;
+            }
+
             sendBtn.innerText = "جاري الحفظ...";
 
-            // 6. الحفظ في Firebase داخل مجموعة "us"
+            // 4. حفظ البيانات بعد اجتياز الفحوصات الأمنية
             await addDoc(collection(db, "us"), {
                 name: name,
                 phone: phone,
@@ -552,9 +552,9 @@
                 date: dateISO
             });
 
-            console.log("تم حفظ طلب المساعدة في مجموعة us بنجاح");
+            // 5. حفظ علامة الإرسال في المتصفح لمنع إعادة الإرسال مجدداً
+            localStorage.setItem('hasRequestedHelp', 'true');
 
-            // 7. تجهيز رسالة الواتساب
             let message = "📌 *طلب مساعدة جديد - مؤسسة الوليد* 📌\n\n";
             message += "• *الاسم:* " + name + "\n";
             message += "• *الهاتف:* " + phone + "\n";
@@ -563,7 +563,6 @@
             message += "• *التفاصيل:* " + notes + "\n\n";
             message += "🪪 *أرفق صورة الهوية بعد رفع البيانات* 🪪";
 
-            // 8. فتح الواتساب
             window.location.href = `https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`;
 
         } catch (error) {
@@ -572,7 +571,7 @@
             window.location.href = `https://wa.me/${adminPhone}?text=Error_In_Saving_Help_Request`;
         } finally {
             sendBtn.disabled = false;
-            sendBtn.innerText = "إرسال الطلب";
+            sendBtn.innerText = "إرسال الطلب عبر واتساب";
         }
     };
   }
@@ -581,7 +580,7 @@
     <script>
     document.addEventListener("DOMContentLoaded", function() {
         const observerOptions = {
-        threshold: 0.1 // تفعيل الحركة عند ظهور 10% من العنصر
+        threshold: 0.1 
     };
 
     const observer = new IntersectionObserver((entries) => {
@@ -589,7 +588,6 @@
             if (entry.isIntersecting) {
                 entry.target.classList.add("active");
             } else {
-                // حذف الكلاس عند الخروج لجعل الحركة تتكرر دوماً
                 entry.target.classList.remove("active");
             }
         });
@@ -600,7 +598,6 @@
     </script>
 
     <script>
-// تأكد أن الدالة موجودة هنا بين وسومي السكريبت
     function toggleWhatsAppModal() {
         const modal = document.getElementById('whatsappModal');
         if (modal.style.display ==='none' || modal.style.display === '') {
@@ -610,7 +607,6 @@
         }
     }
 
-// دالة الإرسال بالرقم الجديد التي أعطيتك إياها
     function sendToWhatsApp() {
         const noteElement = document.getElementById('userNote');
         const note = noteElement.value.trim();
@@ -626,7 +622,6 @@
         
         const fullMessage = prefix + note + suffix;
 
-
         const encodedText = encodeURIComponent(fullMessage);
         const whatsappUrl ="https://api.whatsapp.com/send?phone=" + phoneNumber + "&text=" + encodedText;
 
@@ -634,7 +629,6 @@
         toggleWhatsAppModal();
         noteElement.value =""; 
     }
-    
     </script>
 </body>
 </html>
