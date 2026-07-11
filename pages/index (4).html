@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>WhatsChat</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ==================== شاشة تسجيل الدخول ==================== -->
+<div id="login-screen" class="screen active">
+  <div class="login-box">
+    <div class="login-logo">
+      <svg viewBox="0 0 24 24" width="56" height="56" fill="#25D366">
+        <path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.07L2 22l5.07-1.33A9.94 9.94 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm5.2 14.2c-.22.62-1.28 1.18-1.77 1.25-.45.07-.98.1-1.58-.1-.36-.12-.83-.28-1.43-.55-2.5-1.08-4.13-3.6-4.26-3.77-.12-.17-1.02-1.36-1.02-2.6s.65-1.84.88-2.09c.22-.25.5-.32.66-.32.16 0 .33 0 .47.01.15.01.36-.06.56.43.22.53.73 1.83.8 1.96.06.13.1.28.02.45-.08.17-.13.28-.25.43-.13.15-.27.34-.38.46-.13.13-.26.27-.11.53.15.26.66 1.09 1.42 1.76.98.87 1.8 1.14 2.06 1.27.26.13.42.11.57-.07.16-.18.66-.77.84-1.03.18-.26.35-.22.6-.13.24.09 1.53.72 1.8.85.26.13.44.19.5.3.06.12.06.66-.16 1.28z"/>
+      </svg>
+    </div>
+    <h1>WhatsChat</h1>
+    <p class="login-sub">سجّل الدخول لمتابعة محادثاتك</p>
+
+    <form id="login-form">
+      <div class="input-group">
+        <label for="email">البريد الإلكتروني</label>
+        <input type="email" id="email" placeholder="name@example.com" required>
+      </div>
+      <div class="input-group">
+        <label for="password">كلمة المرور</label>
+        <input type="password" id="password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" id="login-btn">تسجيل الدخول</button>
+      <p id="login-error" class="error-msg"></p>
+      <p id="login-success" class="success-msg"></p>
+    </form>
+
+    <p class="switch-mode">
+      <span id="mode-question">ليس لديك حساب؟</span>
+      <a href="#" id="toggle-mode-link">إنشاء حساب جديد</a>
+    </p>
+  </div>
+</div>
+
+<!-- ==================== واجهة المستخدم العادي ==================== -->
+<div id="user-screen" class="screen">
+  <div class="chat-window single">
+    <header class="chat-header">
+      <div class="header-left">
+        <div class="avatar admin-avatar">@</div>
+        <div class="header-info">
+          <span class="header-name">فريق الدعم</span>
+          <span class="header-status" id="user-connection-status">متصل</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="my-identity" id="my-identity">user@example.com</span>
+        <button class="icon-btn" id="user-logout-btn" title="تسجيل الخروج">⎋</button>
+      </div>
+    </header>
+
+    <main class="messages-area" id="user-messages"></main>
+
+    <footer class="input-bar" id="user-input-bar">
+      <!-- سيتم حقن شريط الإدخال هنا عبر JS (مشترك بين الواجهتين) -->
+    </footer>
+  </div>
+</div>
+
+<!-- ==================== واجهة الأدمن ==================== -->
+<div id="admin-screen" class="screen">
+  <div class="admin-layout">
+    <!-- القائمة الجانبية -->
+    <aside class="sidebar" id="admin-sidebar">
+      <header class="sidebar-header">
+        <div class="header-left">
+          <div class="avatar me-avatar">Ad</div>
+          <span class="header-name">لوحة تحكم الأدمن</span>
+        </div>
+        <button class="icon-btn" id="admin-logout-btn" title="تسجيل الخروج">⎋</button>
+      </header>
+      <div class="sidebar-search">
+        <input type="text" id="conversation-search" placeholder="بحث في المحادثات...">
+      </div>
+      <div class="conversation-list" id="conversation-list">
+        <!-- تُملأ ديناميكياً بواسطة JS -->
+      </div>
+    </aside>
+
+    <!-- نافذة المحادثة -->
+    <div class="chat-window" id="admin-chat-window">
+      <div class="no-chat-selected" id="no-chat-selected">
+        <p>اختر محادثة من القائمة لبدء المراسلة</p>
+      </div>
+
+      <div class="active-chat" id="admin-active-chat" style="display:none;">
+        <header class="chat-header">
+          <div class="header-left">
+            <button class="icon-btn back-btn" id="back-to-list">→</button>
+            <div class="avatar" id="admin-chat-avatar">U</div>
+            <div class="header-info">
+              <span class="header-name" id="admin-chat-name">—</span>
+              <span class="header-status" id="admin-chat-status">—</span>
+            </div>
+          </div>
+        </header>
+
+        <main class="messages-area" id="admin-messages"></main>
+
+        <footer class="input-bar" id="admin-input-bar">
+          <!-- سيتم حقن شريط الإدخال هنا عبر JS -->
+        </footer>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== قالب شريط الإدخال (يُستنسخ عبر JS) ==================== -->
+<template id="input-bar-template">
+  <div class="input-bar-inner">
+    <button type="button" class="icon-btn emoji-toggle" title="إيموجي">😊</button>
+    <button type="button" class="icon-btn attach-toggle" title="إرفاق ملف">📎</button>
+    <input type="file" class="file-input" accept="image/*,application/pdf" hidden>
+    <input type="text" class="text-input" placeholder="اكتب رسالة" autocomplete="off">
+    <button type="button" class="icon-btn mic-btn" title="تسجيل صوتي">🎤</button>
+    <button type="button" class="send-btn" title="إرسال">➤</button>
+  </div>
+  <div class="emoji-panel hidden">
+    <!-- تُملأ عبر JS -->
+  </div>
+  <div class="recording-indicator hidden">
+    <span class="rec-dot"></span> جارِ التسجيل... <span class="rec-timer">00:00</span>
+    <button type="button" class="cancel-rec-btn">إلغاء</button>
+    <button type="button" class="send-rec-btn">إرسال</button>
+  </div>
+</template>
+
+<!-- عنصر الصوت الخاص بالتنبيهات -->
+<audio id="notif-audio" preload="auto"></audio>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+</body>
+</html>
