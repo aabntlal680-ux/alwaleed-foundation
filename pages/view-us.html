@@ -299,45 +299,58 @@
 
     
     <script type="module">
-    // 1. استيراد مكتبة Supabase الرسمية عبر CDN
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    // 1. استيراد مكتبات Firebase الرسمية (الخاصة بالتهيئة وقاعدة البيانات Firestore)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // 2. إعدادات الاتصال بـ Supabase (استبدل القيم ببيانات مشروعك الحقيقية)
+    // 2. إعدادات الاتصال بـ Firebase الخاصة بمشروعك (التي أرسلتها)
     const firebaseConfig = {
-            apiKey: "AIzaSyC1-J4dSTmxUnz5d7dvq9XWrRHf_Lr511M",
-            authDomain: "alwaleed-3a813.firebaseapp.com",
-            projectId: "alwaleed-3a813",
-            storageBucket: "alwaleed-3a813.firebasestorage.app",
-            messagingSenderId: "680698906569",
-            appId: "1:680698906569:web:154df6466c1c89d67f4a18"
-        };
-    // 3. دالة جلب بيانات طلبات المساعدة من جدول "us"
+        apiKey: "AIzaSyC1-J4dSTmxUnz5d7dvq9XWrRHf_Lr511M",
+        authDomain: "alwaleed-3a813.firebaseapp.com",
+        projectId: "alwaleed-3a813",
+        storageBucket: "alwaleed-3a813.firebasestorage.app",
+        messagingSenderId: "680698906569",
+        appId: "1:680698906569:web:154df6466c1c89d67f4a18"
+    };
+
+    // تهيئة وتفعيل اتصال التطبيق بـ Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // ربط عناصر واجهة HTML بالكود (تأكد من وجود هذه المعرفات 'id' في صفحتك)
+    const tableBody = document.getElementById('tableBody');
+    const loader = document.getElementById('loader');
+
+    // 3. دالة جلب بيانات طلبات المساعدة من مجموعة (Collection) "us"
     async function loadData() {
         try {
-            // جلب البيانات مرتبة تنازلياً حسب التاريخ من سوبابيز
-            const { data, error } = await supabase
-                .from('us')
-                .select('*')
-                .order('date', { ascending: false });
+            // إنشاء استعلام لجلب البيانات من مجموعة 'us' وترتيبها حسب حقل 'date' تنازلياً (المنشور حديثاً أولاً)
+            const q = query(collection(db, "us"), orderBy("date", "desc"));
+            const querySnapshot = await getDocs(q);
 
-            if (error) throw error;
-
+            // تفريغ الجدول وإخفاء مؤشر التحميل
             tableBody.innerHTML = "";
-            loader.style.display = "none";
+            if (loader) loader.style.display = "none";
 
-            if (!data || data.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="4" style="padding: 20px; color: #999;">لا توجد طلبات حالياً</td></tr>`;
+            // إذا كانت المجموعة فارغة ولا توجد بيانات
+            if (querySnapshot.empty) {
+                tableBody.innerHTML = `<tr><td colspan="4" style="padding: 20px; color: #999; text-align: center;">لا توجد طلبات حالياً</td></tr>`;
                 return;
             }
 
-            // بناء الصفوف ديناميكياً
-            data.forEach((item) => {
+            // بناء صفوف الجدول ديناميكياً بناءً على البيانات القادمة من فايربيس
+            querySnapshot.forEach((doc) => {
+                const item = doc.data();
+                
+                // معالجة التاريخ وتنسيقه محلياً ليناسب اليمن (العربية)
                 let dateStr = "---";
                 if (item.date) {
-                    const rawDate = new Date(item.date);
+                    // إذا كان التاريخ مخزناً كـ Timestamp في فايربيس نقوم بتحويله أولاً، وإلا نتعامل معه كتاريخ عادي
+                    const rawDate = item.date.toDate ? item.date.toDate() : new Date(item.date);
                     dateStr = isNaN(rawDate) ? "---" : rawDate.toLocaleDateString('ar-YE');
                 }
 
+                // إنشاء صف جديد في الجدول
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td><strong>${item.name || '---'}</strong></td>
@@ -348,13 +361,15 @@
                 tableBody.appendChild(row);
             });
         } catch (error) {
-            console.error("Supabase Error:", error);
-            loader.style.color = "red";
-            loader.innerHTML = `فشل تحميل البيانات.<br><small style="color: #666;">${error.message}</small>`;
+            console.error("Firebase Error:", error);
+            if (loader) {
+                loader.style.color = "red";
+                loader.innerHTML = `فشل تحميل البيانات.<br><small style="color: #666;">${error.message}</small>`;
+            }
         }
     }
 
-    // تشغيل الدالة فور تحميل الصفحة
+    // تشغيل الدالة تلقائياً بمجرد تحميل الصفحة
     loadData();
 </script>
 
