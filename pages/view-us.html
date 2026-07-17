@@ -299,10 +299,11 @@
 
     
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    // 1. استيراد مكتبة Supabase الرسمية عبر CDN
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-        const firebaseConfig = {
+    // 2. إعدادات الاتصال بـ Supabase (استبدل القيم ببيانات مشروعك الحقيقية)
+    const firebaseConfig = {
             apiKey: "AIzaSyC1-J4dSTmxUnz5d7dvq9XWrRHf_Lr511M",
             authDomain: "alwaleed-3a813.firebaseapp.com",
             projectId: "alwaleed-3a813",
@@ -310,69 +311,53 @@
             messagingSenderId: "680698906569",
             appId: "1:680698906569:web:154df6466c1c89d67f4a18"
         };
+    // 3. دالة جلب بيانات طلبات المساعدة من جدول "us"
+    async function loadData() {
+        try {
+            // جلب البيانات مرتبة تنازلياً حسب التاريخ من سوبابيز
+            const { data, error } = await supabase
+                .from('us')
+                .select('*')
+                .order('date', { ascending: false });
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+            if (error) throw error;
 
-        const tableBody = document.getElementById('tableBody');
-        const loader = document.getElementById('loader');
+            tableBody.innerHTML = "";
+            loader.style.display = "none";
 
-        const q = query(collection(db, "us"), orderBy("date", "desc"));
-
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-// إعدادات Firebase الخاصة بك هنا...
-const firebaseConfig = { ... }; 
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const tableBody = document.getElementById('tableBody');
-const loader = document.getElementById('loader');
-
-async function loadData() {
-    try {
-        // استعلام مباشر وسريع يعتمد على الفهرس الأحادي التلقائي
-        const q = query(collection(db, "us"), orderBy("date", "desc"));
-        const snapshot = await getDocs(q);
-        
-        tableBody.innerHTML = "";
-        loader.style.display = "none";
-
-        if (snapshot.empty) {
-            tableBody.innerHTML = `<tr><td colspan="4">لا توجد طلبات حالياً</td></tr>`;
-            return;
-        }
-
-        snapshot.forEach((doc) => {
-            const item = doc.data();
-            // التأكد من طريقة تحويل التاريخ بحسب نوعه في قاعدة البيانات
-            let dateStr = "---";
-            if (item.date) {
-                // إذا كان Timestamp أو نص صالح
-                dateStr = new Date(item.date.seconds ? item.date.toMillis() : item.date).toLocaleDateString('ar-YE');
+            if (!data || data.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="4" style="padding: 20px; color: #999;">لا توجد طلبات حالياً</td></tr>`;
+                return;
             }
 
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td><strong>${item.name || ''}</strong></td>
-                <td><span class="status-badge">${item.location || ''}</span></td>
-                <td>${item.type || ''}</td>
-                <td style="color:#888;">${dateStr}</td>
-            `;
-            tableBody.appendChild(row);
-        });
-    } catch (error) {
-        console.error(error);
-        loader.style.color = "red";
-        loader.innerText = "فشل التحميل. تأكد من إعدادات الحماية (Rules) في Firebase.";
-    }
-}
+            // بناء الصفوف ديناميكياً
+            data.forEach((item) => {
+                let dateStr = "---";
+                if (item.date) {
+                    const rawDate = new Date(item.date);
+                    dateStr = isNaN(rawDate) ? "---" : rawDate.toLocaleDateString('ar-YE');
+                }
 
-// استدعاء الدالة فوراً
-loadData();
-    </script>
-    
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${item.name || '---'}</strong></td>
+                    <td><span class="status-badge">${item.location || '---'}</span></td>
+                    <td>${item.type || '---'}</td>
+                    <td style="color:#888;">${dateStr}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        } catch (error) {
+            console.error("Supabase Error:", error);
+            loader.style.color = "red";
+            loader.innerHTML = `فشل تحميل البيانات.<br><small style="color: #666;">${error.message}</small>`;
+        }
+    }
+
+    // تشغيل الدالة فور تحميل الصفحة
+    loadData();
+</script>
+
     <script>
     document.addEventListener("DOMContentLoaded", function() {
         const observerOptions = {
