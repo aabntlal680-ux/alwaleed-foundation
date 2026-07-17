@@ -269,6 +269,9 @@
         </div>
     </footer>
 
+    <a href="/pages/index-ss.html" class="whatsapp-float"><i class="fab fa-whatsapp"></i></a>
+
+<!-- 
     <div id="whatsappModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
         <div style="background: white; width: 90%; max-width: 400px; border-radius: 15px; overflow: hidden; font-family: sans-serif;">
             <div style="background: #25d366; color: white; padding: 15px; text-align: center; font-weight: bold;">
@@ -285,7 +288,7 @@
                 </button>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <script>
         function switchMethod(method) {
@@ -376,18 +379,18 @@
             document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
         });
 
-        function toggleWhatsAppModal() {
-            const m = document.getElementById('whatsappModal');
-            m.style.display = (m.style.display === 'none' || m.style.display === '') ? 'flex' : 'none';
-        }
+        // function toggleWhatsAppModal() {
+        //     const m = document.getElementById('whatsappModal');
+        //     m.style.display = (m.style.display === 'none' || m.style.display === '') ? 'flex' : 'none';
+        // }
 
-        function sendToWhatsApp() {
-            const note = document.getElementById('userNote').value.trim();
-            if (!note) return alert("اكتب ملاحظتك");
-            const msg = `📢 *رسالة جديدة:*\n\n${note}`;
-            window.open(`https://api.whatsapp.com/send?phone=966567232680&text=${encodeURIComponent(msg)}`, '_blank');
-            toggleWhatsAppModal();
-        }
+        // function sendToWhatsApp() {
+        //     const note = document.getElementById('userNote').value.trim();
+        //     if (!note) return alert("اكتب ملاحظتك");
+        //     const msg = `📢 *رسالة جديدة:*\n\n${note}`;
+        //     window.open(`https://api.whatsapp.com/send?phone=966567232680&text=${encodeURIComponent(msg)}`, '_blank');
+        //     toggleWhatsAppModal();
+        // }
     </script>
 </body>
 </html>
