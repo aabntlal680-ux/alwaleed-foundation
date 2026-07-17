@@ -81,7 +81,6 @@ async function apiFetch(endpoint, options = {}) {
 
 async function init() {
   try {
-    // محاولة استعادة الجلسة المحلية المخزنة في المتصفح
     const savedUser = localStorage.getItem('chat_user');
     const savedProfile = localStorage.getItem('chat_profile');
     
@@ -108,7 +107,7 @@ $("#toggle-mode-link").addEventListener("click", (e) => {
   e.preventDefault();
   authMode = authMode === "login" ? "signup" : "login";
   $("#login-btn").textContent = authMode === "login" ? "تسجيل الدخول" : "إنشاء الحساب";
-  $("#mode-question").textContent = authMode === "login" ? "ليس لديك حساب？" : "لديك حساب بالفعل؟";
+  $("#mode-question").textContent = authMode === "login" ? "ليس لديك حساب؟" : "لديك حساب بالفعل؟";
   $("#toggle-mode-link").textContent = authMode === "login" ? "إنشاء حساب جديد" : "تسجيل الدخول";
   $("#login-error").textContent = "";
   $("#login-success").textContent = "";
@@ -130,11 +129,13 @@ $("#login-form").addEventListener("submit", async (e) => {
       btn.textContent = "جاري إنشاء الحساب...";
       const result = await apiFetch('auth', {
         method: 'POST',
-        body: JSON.stringify({ action: 'signup', email, password })
+        body: JSON.stringify({ action: 'register', email, password })
       });
       btn.disabled = false;
       btn.textContent = "إنشاء الحساب";
-      successEl.textContent = result.message;
+      successEl.textContent = "تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول.";
+      authMode = "login";
+      $("#login-btn").textContent = "تسجيل الدخول";
       return;
     }
 
@@ -147,7 +148,6 @@ $("#login-form").addEventListener("submit", async (e) => {
     btn.disabled = false;
     btn.textContent = "تسجيل الدخول";
 
-    // حفظ الجلسة محلياً
     localStorage.setItem('chat_user', JSON.stringify(result.user));
     localStorage.setItem('chat_profile', JSON.stringify(result.profile));
     
@@ -205,7 +205,7 @@ function mountInputBar(containerEl, onSend) {
   function sendText() {
     const val = textInput.value.trim();
     if (!val) return;
-    onSend({ content: val });
+    onSend({ text: val }); // تم تغييرها إلى text لتطابق السيرفر
     textInput.value = "";
     emojiPanel.classList.add("hidden");
   }
@@ -215,18 +215,18 @@ function mountInputBar(containerEl, onSend) {
     const file = fileInput.files[0];
     if (!file) return;
     
-    // تحويل الملف إلى Base64 لرفعه بأمان عبر السيرفر
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = async () => {
       const base64Data = reader.result.split(',')[1];
       try {
+        // مطابقة متغيرات الرفع مع السيرفر تماماً
         const uploadResult = await apiFetch('upload', {
           method: 'POST',
-          body: JSON.stringify({ filename: file.name, fileData: base64Data })
+          body: JSON.stringify({ fileName: file.name, fileBase64: base64Data, fileType: file.type })
         });
         const mediaType = file.type.startsWith("image/") ? "image" : "file";
-        onSend({ content: "", media_url: uploadResult.publicUrl, media_type: mediaType });
+        onSend({ text: "", media_url: uploadResult.publicUrl, media_type: mediaType });
       } catch (err) {
         alert("فشل رفع الملف: " + err.message);
       }
@@ -267,7 +267,7 @@ async function startRecording(containerEl, onSend) {
 
 function stopRecording(containerEl, shouldSend, onSend) {
   clearInterval(state.recordTimerInterval);
-  $(".recording-indicator", containerEl).add("hidden");
+  $(".recording-indicator", containerEl).classList.add("hidden");
   $(".input-bar-inner", containerEl).style.display = "flex";
   $(".rec-timer", containerEl).textContent = "00:00";
 
@@ -283,9 +283,9 @@ function stopRecording(containerEl, shouldSend, onSend) {
         try {
           const uploadResult = await apiFetch('upload', {
             method: 'POST',
-            body: JSON.stringify({ filename: `voice_${Date.now()}.webm`, fileData: base64Data })
+            body: JSON.stringify({ fileName: `voice_${Date.now()}.webm`, fileBase64: base64Data, fileType: "audio/webm" })
           });
-          onSend({ content: "", media_url: uploadResult.publicUrl, media_type: "audio" });
+          onSend({ text: "", media_url: uploadResult.publicUrl, media_type: "audio" });
         } catch (err) {
           alert("فشل رفع التسجيل الصوتي");
         }
@@ -317,7 +317,7 @@ function renderMessageBubble(msg, isOutgoing) {
     else mediaHtml = `<a href="${msg.media_url}" target="_blank" rel="noopener">📎 فتح الملف</a>`;
   }
 
-  const textHtml = msg.content ? `<div class="text">${escapeHtml(msg.content)}</div>` : "";
+  const textHtml = msg.text ? `<div class="text">${escapeHtml(msg.text)}</div>` : "";
   let ticksHtml = "";
   if (isOutgoing) {
     const tickChar = msg.status === "sent" ? "✓" : "✓✓";
@@ -337,6 +337,7 @@ function escapeHtml(str) {
 }
 
 function appendMessagesWithDayDividers(container, messages) {
+  if (!messages || !Array.isArray(messages)) return;
   container.innerHTML = "";
   let lastDay = null;
   messages.forEach(msg => {
@@ -363,32 +364,29 @@ function scrollToBottom(container) {
 // =====================================================================
 
 async function bootUserInterface() {
-  $("#my-identity").textContent = state.currentProfile.email;
+  $("#my-identity").textContent = state.currentProfile.name || state.currentProfile.email;
   showScreen("user-screen");
   mountInputBar($("#user-input-bar"), (payload) => sendUserMessage(payload));
 
   await loadUserMessages();
   
-  // تشغيل الـ Polling الدوري بدلاً من الـ Realtime الفاشل بالـ VPN
   if (state.pollingInterval) clearInterval(state.pollingInterval);
   state.pollingInterval = setInterval(loadUserMessages, 3000);
 }
 
 async function loadUserMessages() {
   try {
-    const result = await apiFetch('messages?action=get_user_messages');
-    state.adminProfile = result.admin;
+    const messages = await apiFetch('chat'); // تواصل مباشر مع دالة الجلب GET لملف الشات
     
-    // فحص لو هناك رسالة جديدة لتشغيل الصوت
     const currentCount = $("#user-messages").querySelectorAll('.msg-row').length;
-    if (currentCount > 0 && result.messages.length > currentCount) {
-      const lastMsg = result.messages[result.messages.length - 1];
-      if (lastMsg.sender_id === state.adminProfile.id && document.hidden) {
+    if (currentCount > 0 && messages.length > currentCount) {
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg.sender_id !== state.currentUser.id && document.hidden) {
         playNotificationSound();
       }
     }
 
-    appendMessagesWithDayDividers($("#user-messages"), result.messages);
+    appendMessagesWithDayDividers($("#user-messages"), messages);
   } catch (err) {
     console.error(err);
   }
@@ -396,9 +394,9 @@ async function loadUserMessages() {
 
 async function sendUserMessage(payload) {
   try {
-    const data = await apiFetch('messages', {
+    const data = await apiFetch('chat', {
       method: 'POST',
-      body: JSON.stringify({ action: 'send_message', receiver_id: state.adminProfile.id, ...payload })
+      body: JSON.stringify({ sender_id: state.currentUser.id, ...payload })
     });
     $("#user-messages").appendChild(renderMessageBubble(data, true));
     scrollToBottom($("#user-messages"));
@@ -433,9 +431,27 @@ async function bootAdminInterface() {
 
 async function loadAllConversations() {
   try {
-    const result = await apiFetch(`messages?action=get_admin_conversations&selectedUserId=${state.selectedUserId || ''}`);
+    const messages = await apiFetch('chat');
     
-    state.conversations = result.conversations;
+    // بناء الخرائط يدويًا بحسب معمارية السيرفر المحدثة
+    const convos = {};
+    messages.forEach(msg => {
+      const otherId = msg.sender_id === state.currentUser.id ? 'admin' : msg.sender_id;
+      if (otherId === 'admin') return; 
+
+      if (!convos[otherId]) {
+        convos[otherId] = {
+          profile: { id: otherId, email: `User_${otherId.substring(0,5)}` },
+          lastMessage: msg,
+          unread: 0,
+          messages: []
+        };
+      }
+      convos[otherId].messages.push(msg);
+      convos[otherId].lastMessage = msg;
+    });
+
+    state.conversations = convos;
     renderConversationList($("#conversation-search").value.trim().toLowerCase());
 
     if (state.selectedUserId && state.conversations[state.selectedUserId]) {
@@ -463,15 +479,15 @@ function renderConversationList(filterText = "") {
     item.className = "conversation-item" + (convo.profile.id === state.selectedUserId ? " selected" : "");
     
     const lastMsgPreview = convo.lastMessage
-      ? (convo.lastMessage.content || mediaPreviewLabel(convo.lastMessage.media_type))
+      ? (convo.lastMessage.text || mediaPreviewLabel(convo.lastMessage.media_type))
       : "لا توجد رسائل بعد";
     const lastTime = convo.lastMessage ? formatTime(convo.lastMessage.created_at) : "";
 
     item.innerHTML = `
-      <div class="avatar">${(convo.profile.full_name || convo.profile.email)[0].toUpperCase()}</div>
+      <div class="avatar">${convo.profile.email[0].toUpperCase()}</div>
       <div class="conv-info">
         <div class="conv-top-row">
-          <span class="conv-name">${escapeHtml(convo.profile.full_name || convo.profile.email)}</span>
+          <span class="conv-name">${escapeHtml(convo.profile.email)}</span>
           <span class="conv-time">${lastTime}</span>
         </div>
         <div class="conv-bottom-row">
@@ -501,8 +517,8 @@ async function selectConversation(userId) {
   $("#admin-active-chat").style.display = "flex";
   $("#admin-chat-window").classList.add("mobile-open");
 
-  $("#admin-chat-name").textContent = convo.profile.full_name || convo.profile.email;
-  $("#admin-chat-avatar").textContent = (convo.profile.full_name || convo.profile.email)[0].toUpperCase();
+  $("#admin-chat-name").textContent = convo.profile.email;
+  $("#admin-chat-avatar").textContent = convo.profile.email[0].toUpperCase();
   $("#admin-chat-status").textContent = convo.profile.email;
 
   appendMessagesWithDayDividers($("#admin-messages"), convo.messages);
@@ -511,10 +527,13 @@ async function selectConversation(userId) {
 
 async function sendAdminMessage(receiverId, payload) {
   try {
-    const data = await apiFetch('messages', {
+    const data = await apiFetch('chat', {
       method: 'POST',
-      body: JSON.stringify({ action: 'send_message', receiver_id: receiverId, ...payload })
+      body: JSON.stringify({ sender_id: state.currentUser.id, ...payload })
     });
+    if(!state.conversations[receiverId]) {
+       state.conversations[receiverId] = { messages: [] };
+    }
     state.conversations[receiverId].messages.push(data);
     state.conversations[receiverId].lastMessage = data;
     $("#admin-messages").appendChild(renderMessageBubble(data, true));
