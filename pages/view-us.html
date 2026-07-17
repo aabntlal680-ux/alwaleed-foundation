@@ -320,20 +320,21 @@
         const q = query(collection(db, "us"), orderBy("date", "desc"));
 
         
-        // 1. تأكد من استيراد getDocs بدلاً من onSnapshot
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// ... بقية إعدادات Firebase الخاصة بك ...
+// إعدادات Firebase الخاصة بك هنا...
+const firebaseConfig = { ... }; 
 
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 const tableBody = document.getElementById('tableBody');
 const loader = document.getElementById('loader');
 
-// دالة لجلب البيانات بسرعة
 async function loadData() {
     try {
+        // استعلام مباشر وسريع يعتمد على الفهرس الأحادي التلقائي
         const q = query(collection(db, "us"), orderBy("date", "desc"));
-        
-        // جلب البيانات دفعة واحدة (أسرع بمرتين من الاتصال المفتوح)
         const snapshot = await getDocs(q);
         
         tableBody.innerHTML = "";
@@ -346,7 +347,12 @@ async function loadData() {
 
         snapshot.forEach((doc) => {
             const item = doc.data();
-            const dateStr = item.date ? new Date(item.date).toLocaleDateString('ar-YE') : "---";
+            // التأكد من طريقة تحويل التاريخ بحسب نوعه في قاعدة البيانات
+            let dateStr = "---";
+            if (item.date) {
+                // إذا كان Timestamp أو نص صالح
+                dateStr = new Date(item.date.seconds ? item.date.toMillis() : item.date).toLocaleDateString('ar-YE');
+            }
 
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -358,15 +364,15 @@ async function loadData() {
             tableBody.appendChild(row);
         });
     } catch (error) {
-        console.error("خطأ أثناء تحميل البيانات:", error);
-        loader.innerText = "حدث خطأ في تحميل البيانات، يرجى تحديث الصفحة.";
+        console.error(error);
+        loader.style.color = "red";
+        loader.innerText = "فشل التحميل. تأكد من إعدادات الحماية (Rules) في Firebase.";
     }
 }
 
-// تشغيل الدالة فور تحميل الصفحة
+// استدعاء الدالة فوراً
 loadData();
 
-    });
     </script>
     
     <script>
