@@ -64,7 +64,6 @@ async function apiFetch(endpoint, options = {}) {
     ...options.headers,
     'Content-Type': 'application/json'
   };
-  // تضمين الـ ID الخاص بالمستخدم الحالي في الترويسة للتحقق من الهوية بالسيرفر
   if (state.currentUser) {
     options.headers['x-user-id'] = state.currentUser.id;
   }
@@ -127,7 +126,7 @@ $("#login-form").addEventListener("submit", async (e) => {
   try {
     if (authMode === "signup") {
       btn.textContent = "جاري إنشاء الحساب...";
-      const result = await apiFetch('auth', {
+      await apiFetch('auth', {
         method: 'POST',
         body: JSON.stringify({ action: 'register', email, password })
       });
@@ -205,7 +204,7 @@ function mountInputBar(containerEl, onSend) {
   function sendText() {
     const val = textInput.value.trim();
     if (!val) return;
-    onSend({ text: val }); // تم تغييرها إلى text لتطابق السيرفر
+    onSend({ text: val }); 
     textInput.value = "";
     emojiPanel.classList.add("hidden");
   }
@@ -220,7 +219,6 @@ function mountInputBar(containerEl, onSend) {
     reader.onload = async () => {
       const base64Data = reader.result.split(',')[1];
       try {
-        // مطابقة متغيرات الرفع مع السيرفر تماماً
         const uploadResult = await apiFetch('upload', {
           method: 'POST',
           body: JSON.stringify({ fileName: file.name, fileBase64: base64Data, fileType: file.type })
@@ -310,14 +308,25 @@ function renderMessageBubble(msg, isOutgoing) {
   const bubble = document.createElement("div");
   bubble.className = `bubble ${isOutgoing ? "out" : "in"}`;
 
+  // قراءة رابط الوسائط بدعم الحروف الكبيرة والصغيرة لمنع الصور المكسورة
+  const actualMediaUrl = msg.media_url || msg.mediaUrl;
+  const actualMediaType = msg.media_type || msg.mediaType;
+
   let mediaHtml = "";
-  if (msg.media_url) {
-    if (msg.media_type === "image") mediaHtml = `<img src="${msg.media_url}" alt="صورة">`;
-    else if (msg.media_type === "audio") mediaHtml = `<audio controls src="${msg.media_url}"></audio>`;
-    else mediaHtml = `<a href="${msg.media_url}" target="_blank" rel="noopener">📎 فتح الملف</a>`;
+  if (actualMediaUrl) {
+    if (actualMediaType === "image") {
+      mediaHtml = `<img src="${actualMediaUrl}" alt="صورة" style="max-width:100%; max-height:250px; border-radius:8px; display:block; margin-bottom:5px;">`;
+    } else if (actualMediaType === "audio") {
+      mediaHtml = `<audio controls src="${actualMediaUrl}" style="max-width:100%; display:block; margin-bottom:5px;"></audio>`;
+    } else {
+      mediaHtml = `<a href="${actualMediaUrl}" target="_blank" rel="noopener" style="display:block; margin-bottom:5px;">📎 فتح الملف</a>`;
+    }
   }
 
-  const textHtml = msg.text ? `<div class="text">${escapeHtml(msg.text)}</div>` : "";
+  // دعم قراءة الحقلين text و content منعاً للفقاعات الفارغة
+  const messageText = msg.text || msg.content || "";
+  const textHtml = messageText ? `<div class="text">${escapeHtml(messageText)}</div>` : "";
+  
   let ticksHtml = "";
   if (isOutgoing) {
     const tickChar = msg.status === "sent" ? "✓" : "✓✓";
@@ -376,7 +385,7 @@ async function bootUserInterface() {
 
 async function loadUserMessages() {
   try {
-    const messages = await apiFetch('chat'); // تواصل مباشر مع دالة الجلب GET لملف الشات
+    const messages = await apiFetch('chat'); 
     
     const currentCount = $("#user-messages").querySelectorAll('.msg-row').length;
     if (currentCount > 0 && messages.length > currentCount) {
@@ -433,11 +442,16 @@ async function loadAllConversations() {
   try {
     const messages = await apiFetch('chat');
     
-    // بناء الخرائط يدويًا بحسب معمارية السيرفر المحدثة
+    // بناء غرف المحادثات للأدمن بشكل مرن وصحيح
     const convos = {};
     messages.forEach(msg => {
-      const otherId = msg.sender_id === state.currentUser.id ? 'admin' : msg.sender_id;
-      if (otherId === 'admin') return; 
+      let otherId = msg.sender_id === state.currentUser.id ? msg.receiver_id : msg.sender_id;
+      
+      if (!otherId || otherId === state.currentUser.id) {
+        otherId = msg.sender_id;
+      }
+      
+      if (!otherId || otherId === state.currentUser.id) return; 
 
       if (!convos[otherId]) {
         convos[otherId] = {
@@ -478,8 +492,9 @@ function renderConversationList(filterText = "") {
     const item = document.createElement("div");
     item.className = "conversation-item" + (convo.profile.id === state.selectedUserId ? " selected" : "");
     
+    const messageText = convo.lastMessage.text || convo.lastMessage.content;
     const lastMsgPreview = convo.lastMessage
-      ? (convo.lastMessage.text || mediaPreviewLabel(convo.lastMessage.media_type))
+      ? (messageText || mediaPreviewLabel(convo.lastMessage.media_type || convo.lastMessage.mediaType))
       : "لا توجد رسائل بعد";
     const lastTime = convo.lastMessage ? formatTime(convo.lastMessage.created_at) : "";
 
@@ -529,7 +544,7 @@ async function sendAdminMessage(receiverId, payload) {
   try {
     const data = await apiFetch('chat', {
       method: 'POST',
-      body: JSON.stringify({ sender_id: state.currentUser.id, ...payload })
+      body: JSON.stringify({ sender_id: state.currentUser.id, receiver_id: receiverId, ...payload })
     });
     if(!state.conversations[receiverId]) {
        state.conversations[receiverId] = { messages: [] };
