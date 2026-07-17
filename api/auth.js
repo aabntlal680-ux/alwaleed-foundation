@@ -1,25 +1,72 @@
-import { supabaseServer } from './supabase';
+const { supabaseServer } = require('./supabase');
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
-  const { action, email, password } = req.body;
+module.exports = async (req, res) => {
+  // تفعيل الـ CORS لتتمكن صفحات الـ HTML من الاتصال بالسيرفر بأمان
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, x-user-id'
+  );
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'الطريقة غير مسموح بها' });
+  }
 
   try {
-    if (action === 'signup') {
-      const { data, error } = await supabaseServer.auth.signUp({ email, password });
-      if (error) return res.status(400).json({ error: error.message });
-      return res.status(200).json({ message: 'تم إنشاء الحساب بنجاح! تحقق من بريدك الإلكتروني.' });
-    } 
-    
-    if (action === 'login') {
-      const { data, error } = await supabaseServer.auth.signInWithPassword({ email, password });
-      if (error) return res.status(400).json({ error: 'بيانات الدخول غير صحيحة.' });
+    const { action, email, password, name, role } = req.body;
 
-      // جلب البروفايل
-      const { data: profile } = await supabaseServer.from('profiles').eq('id', data.user.id).single();
+    // --- أولاً: تسجيل الدخول (Login) ---
+    if (action === 'login') {
+      const { data, error } = await supabaseServer.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) return res.status(400).json({ error: error.message });
+
+      // جلب بيانات الحساب (Profile) لمعرفة الدور (Role)
+      const { data: profile } = await supabaseServer
+        .from('profiles')
+        .eq('id', data.user.id)
+        .single();
+
       return res.status(200).json({ user: data.user, profile });
     }
-  } catch (e) {
-    return res.status(500).json({ error: 'خطأ داخلي بالسيرفر' });
+
+    // --- ثانياً: إنشاء حساب جديد (Register) ---
+    if (action === 'register') {
+      const { data, error } = await supabaseServer.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) return res.status(400).json({ error: error.message });
+
+      // إنشاء السجل في جدول profiles بالدور المحدد
+      const { data: profile, error: profileError } = await supabaseServer
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          name: name || email.split('@')[0],
+          role: role || 'user', // الافتراضي مستخدم عادي
+        })
+        .select()
+        .single();
+
+      if (profileError) return res.status(400).json({ error: profileError.message });
+
+      return res.status(200).json({ user: data.user, profile });
+    }
+
+    return res.status(400).json({ error: 'الإجراء غير معروف' });
+
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
-}
+};
