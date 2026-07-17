@@ -1,5 +1,23 @@
 const { supabaseServer } = require('./supabase');
 
+// دالة مساعدة لقراءة وتحليل البيانات القادمة من الواجهة الأمامية (JSON) لبيئة الخادم المستقلة
+function parseRequestBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+    req.on('end', () => {
+      try {
+        resolve(body ? JSON.parse(body) : {});
+      } catch (e) {
+        resolve({});
+      }
+    });
+    req.on('error', (err) => reject(err));
+  });
+}
+
 module.exports = async (req, res) => {
   // تفعيل الـ CORS لتتمكن صفحات الـ HTML من الاتصال بالسيرفر بأمان
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -19,7 +37,13 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { action, email, password, name, role } = req.body;
+    // قراءة وتحليل بيانات الـ Body القادمة لمنع انهيار السيرفر
+    const body = await parseRequestBody(req);
+    const { action, email, password, name, role } = body;
+
+    if (!action || !email || !password) {
+      return res.status(400).json({ error: 'البيانات المرسلة غير مكتملة' });
+    }
 
     // --- أولاً: تسجيل الدخول (Login) ---
     if (action === 'login') {
@@ -30,9 +54,10 @@ module.exports = async (req, res) => {
 
       if (error) return res.status(400).json({ error: error.message });
 
-      // جلب بيانات الحساب (Profile) لمعرفة الدور (Role)
+      // جلب بيانات الحساب مع إضافة دالة الاستعلام الناقصة .select('*')
       const { data: profile } = await supabaseServer
         .from('profiles')
+        .select('*')
         .eq('id', data.user.id)
         .single();
 
@@ -48,13 +73,13 @@ module.exports = async (req, res) => {
 
       if (error) return res.status(400).json({ error: error.message });
 
-      // إنشاء السجل في جدول profiles بالدور المحدد
+      // إنشاء السجل الفعلي للمستخدم الجديد في جدول profiles
       const { data: profile, error: profileError } = await supabaseServer
         .from('profiles')
         .insert({
           id: data.user.id,
           name: name || email.split('@')[0],
-          role: role || 'user', // الافتراضي مستخدم عادي
+          role: role || 'user', 
         })
         .select()
         .single();
