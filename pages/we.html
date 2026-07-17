@@ -328,10 +328,11 @@
 </footer>
 
     
+<a href="pages/index-ss.html" class="whatsapp-float"><i class="fab fa-whatsapp"></i></a>
 
 
    
-    <div id="whatsappModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
+    <!-- <div id="whatsappModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
     <div style="background: white; width: 90%; max-width: 400px; border-radius: 15px; overflow: hidden; font-family: sans-serif;">
         <div style="background: #25d366; color: white; padding: 15px; text-align: center; font-weight: bold;">
             صندوق الشكاوي والملاحظات
@@ -347,7 +348,7 @@
             </button>
         </div>
     </div>
-</div>
+</div> -->
 
     <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -369,7 +370,7 @@
     document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
     });
     </script>
-
+<!-- 
     <script>
 // تأكد أن الدالة موجودة هنا بين وسومي السكريبت
     function toggleWhatsAppModal() {
@@ -382,31 +383,31 @@
     }
 
 // دالة الإرسال بالرقم الجديد التي أعطيتك إياها
-    function sendToWhatsApp() {
-        const noteElement = document.getElementById('userNote');
-        const note = noteElement.value.trim();
-        const phoneNumber ="966567232680"; 
+    // function sendToWhatsApp() {
+    //     const noteElement = document.getElementById('userNote');
+    //     const note = noteElement.value.trim();
+    //     const phoneNumber ="966567232680"; 
 
-        if (note ==="") {
-            alert("فضلاً اكتب الملاحظة أولاً");
-            return;
-        }
+    //     if (note ==="") {
+    //         alert("فضلاً اكتب الملاحظة أولاً");
+    //         return;
+    //     }
         
-         const prefix="📢 *رسالة جديدة من الموقع الرسمي:*\n\n";
-         const suffix="\n\nــــــــــــــــــــــــــــــــ\n⚠️ *يرجى النظر في مشكلتي وحلها في أسرع وقت.*";
+    //      const prefix="📢 *رسالة جديدة من الموقع الرسمي:*\n\n";
+    //      const suffix="\n\nــــــــــــــــــــــــــــــــ\n⚠️ *يرجى النظر في مشكلتي وحلها في أسرع وقت.*";
         
-        const fullMessage = prefix + note + suffix;
+    //     const fullMessage = prefix + note + suffix;
 
 
-        const encodedText = encodeURIComponent(fullMessage);
-        const whatsappUrl ="https://api.whatsapp.com/send?phone=" + phoneNumber + "&text=" + encodedText;
+    //     const encodedText = encodeURIComponent(fullMessage);
+    //     const whatsappUrl ="https://api.whatsapp.com/send?phone=" + phoneNumber + "&text=" + encodedText;
 
-        window.open(whatsappUrl,'_blank');
-        toggleWhatsAppModal();
-        noteElement.value =""; 
-    }
+    //     window.open(whatsappUrl,'_blank');
+    //     toggleWhatsAppModal();
+    //     noteElement.value =""; 
+    // }
     
-    </script>
+    </script> -->
 
 </body>
 </html>
