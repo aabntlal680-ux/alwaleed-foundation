@@ -1,10 +1,9 @@
-import { supabaseServer } from './supabase';
+import { supabaseServer } from './supabase'; // حرف i صغير هنا
 
-// إعداد لتعطيل الـ Body Parser الافتراضي لـ Next.js إذا كنت سترسل ملفات كبيرة
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: '10mb', // الحد الأقصى لحجم الصور أو الصوت
+      sizeLimit: '10mb',
     },
   },
 };
@@ -21,13 +20,9 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'بيانات الملف ناقصة' });
     }
 
-    // تحويل الـ Base64 إلى Buffer ليقبله السيرفر ويقوم برفعه
     const buffer = Buffer.from(fileBase64, 'base64');
-    
-    // توليد اسم فريد للملف لمنع التداخل
     const uniqueFileName = `${Math.random()}_${Date.now()}_${fileName}`;
 
-    // الرفع إلى مجلد chat-media الموجود في الـ Storage لديك
     const { data, error } = await supabaseServer
       .storage
       .from('chat-media')
@@ -38,7 +33,6 @@ export default async function handler(req, res) {
 
     if (error) throw error;
 
-    // جلب الرابط العام للملف
     const { data: urlData } = supabaseServer
       .storage
       .from('chat-media')
