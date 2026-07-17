@@ -322,35 +322,32 @@
     const loader = document.getElementById('loader');
 
     // 3. دالة جلب بيانات طلبات المساعدة من مجموعة (Collection) "us"
+        // 3. دالة جلب بيانات طلبات المساعدة من مجموعة "us"
     async function loadData() {
         try {
-            // إنشاء استعلام لجلب البيانات من مجموعة 'us' وترتيبها حسب حقل 'date' تنازلياً (المنشور حديثاً أولاً)
+            // جلب البيانات من مجموعة 'us' وترتيبها (الترتيب سيعمل أبجدياً بشكل صحيح لأن التنسيق يبدأ بالسنة)
             const q = query(collection(db, "us"), orderBy("date", "desc"));
             const querySnapshot = await getDocs(q);
 
-            // تفريغ الجدول وإخفاء مؤشر التحميل
             tableBody.innerHTML = "";
             if (loader) loader.style.display = "none";
 
-            // إذا كانت المجموعة فارغة ولا توجد بيانات
             if (querySnapshot.empty) {
                 tableBody.innerHTML = `<tr><td colspan="4" style="padding: 20px; color: #999; text-align: center;">لا توجد طلبات حالياً</td></tr>`;
                 return;
             }
 
-            // بناء صفوف الجدول ديناميكياً بناءً على البيانات القادمة من فايربيس
+            // بناء الصفوف ديناميكياً
             querySnapshot.forEach((doc) => {
                 const item = doc.data();
                 
-                // معالجة التاريخ وتنسيقه محلياً ليناسب اليمن (العربية)
                 let dateStr = "---";
                 if (item.date) {
-                    // إذا كان التاريخ مخزناً كـ Timestamp في فايربيس نقوم بتحويله أولاً، وإلا نتعامل معه كتاريخ عادي
-                    const rawDate = item.date.toDate ? item.date.toDate() : new Date(item.date);
+                    // بما أن التاريخ string (نص)، نقوم بتحويله مباشرة عبر new Date دون استخدام .toDate()
+                    const rawDate = new Date(item.date);
                     dateStr = isNaN(rawDate) ? "---" : rawDate.toLocaleDateString('ar-YE');
                 }
 
-                // إنشاء صف جديد في الجدول
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td><strong>${item.name || '---'}</strong></td>
