@@ -246,6 +246,54 @@ input:focus{ outline: 2px solid var(--wa-teal); outline-offset: 1px; }
 }
 .active-chat{ display:flex; flex-direction:column; height:100%; }
 .back-btn{ display:none; }
+/* أزرار الرد التلقائي داخل فقاعة الرسالة (msg-buttons) */
+
+.rich-text {
+  line-height: 1.6;
+}
+
+.msg-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.msg-btn {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: #25d366;         /* غيّرها للون هوية مؤسستك إن أردت */
+  color: #ffffff !important;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.msg-btn:hover {
+  background: #1ebe5b;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.msg-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* على الشاشات الصغيرة جداً، اجعل كل زر يأخذ عرض الفقاعة كاملاً لسهولة اللمس */
+@media (max-width: 360px) {
+  .msg-buttons {
+    flex-direction: column;
+  }
+  .msg-btn {
+    text-align: center;
+  }
+}
+
 
 /* ============ استجابة الموبايل (Mobile-First breakpoints) ============ */
 @media (max-width: 768px){
