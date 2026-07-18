@@ -135,6 +135,19 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'الرسالة فارغة' });
       }
 
+      // نتحقق مسبقاً (قبل الإدراج) هل هذه أول رسالة يرسلها هذا المستخدم على الإطلاق
+      // هذا الفحص يخص المستخدم العادي فقط؛ رسائل الأدمن لا تُفعّل رداً تلقائياً
+      let isFirstMessageFromUser = false;
+      if (!isAdmin) {
+        const { count, error: countErr } = await supabaseServer
+          .from('messages')
+          .select('id', { count: 'exact', head: true })
+          .eq('sender_id', senderId);
+
+        if (countErr) throw countErr;
+        isFirstMessageFromUser = (count || 0) === 0;
+      }
+
       const { data, error } = await supabaseServer
         .from('messages')
         .insert({
@@ -149,6 +162,31 @@ export default async function handler(req, res) {
         .single();
 
       if (error) throw error;
+
+      // --- الرد التلقائي على أول رسالة من المستخدم ---
+      if (isFirstMessageFromUser) {
+        const AUTO_REPLY_TEXT =
+`تحية طيبة من مؤسسة الوليد الإنسانية..
+يسعدنا جداً تواصلك معنا، فوجودك يعني لنا الكثير. نحن هنا لنعرف: كيف يمكننا أن نكون عوناً لك اليوم؟ هل تبحث عن طلب مساعدة، أم ترغب في تقديم دعم ومساندة؟
+يمكنك الاطلاع على طلبات المساعدة أو التبرع عبر موقعنا https://alwaleed-foundation.vercel.app 
+نحن بانتظار ردك لنعرف كيف يمكننا خدمتك.
+دمت للخير عنواناً.. فريق مؤسسة الوليد الإنسانية`;
+
+        // لا نُفشل طلب المستخدم لو تعثّر الرد التلقائي لأي سبب؛ فقط نسجّل الخطأ في اللوج
+        const { error: autoErr } = await supabaseServer
+          .from('messages')
+          .insert({
+            sender_id: finalReceiverId, // هوية الأدمن (نفس المعرّف الذي تحقّقنا منه أعلاه)
+            receiver_id: senderId,      // المستخدم الذي راسل للتو
+            text: AUTO_REPLY_TEXT,
+            media_url: null,
+            media_type: null,
+            status: 'sent'
+          });
+
+        if (autoErr) console.error('فشل إرسال الرد التلقائي:', autoErr.message);
+      }
+
       return res.status(200).json(data);
     } catch (e) {
       return res.status(500).json({ error: e.message });
