@@ -1,80 +1,68 @@
-const { supabaseServer } = require('./supabase');
+import { createClient } from '@supabase/supabase-js';
 
-function parseRequestBody(req) {
-  return new Promise((resolve, reject) => {
-    let body = '';
-    req.on('data', chunk => { body += chunk.toString(); });
-    req.on('end', () => {
-      try { resolve(body ? JSON.parse(body) : {}); } catch (e) { resolve({}); }
-    });
-    req.on('error', (err) => reject(err));
-  });
-}
+const supabaseServer = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, x-user-id');
+// إيميل الأدمن للتحكم في الصلاحيات
+const ADMIN_EMAIL = "aabntlal680@gmail.com"; 
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
+export default async function handler(req, res) {
+  const userId = req.headers['x-user-id'];
+  if (!userId) return res.status(401).json({ error: 'غير مصرح' });
 
-  try {
-    // --- جلب الرسائل (GET) ---
-    if (req.method === 'GET') {
-      const { data: messages, error } = await supabaseServer
-        .from('messages')
-        .select('*')
-        .order('created_at', { ascending: true });
+  // --- جلب الرسائل (GET) ---
+  if (req.method === 'GET') {
+    try {
+      // التحقق مما إذا كان المستخدم هو الأدمن
+      const { data: profile } = await supabaseServer
+        .from('profiles')
+        .select('email')
+        .eq('id', userId)
+        .single();
 
-      if (error) return res.status(400).json({ error: error.message });
-      
-      // توحيد الحقول عند الإرجاع لتدعم الكودين (content و text) معاً منعا للفقاعات الفارغة
+      let query = supabaseServer.from('messages').select('*').order('created_at', { ascending: true });
+
+      // إذا لم يكن أدمن، نقوم بفلترة الرسائل لتظهر له فقط ما يخصه
+      if (profile?.email !== ADMIN_EMAIL) {
+        query = query.or(`sender_id.eq.${userId},receiver_id.eq.${userId}`);
+      }
+
+      const { data: messages, error } = await query;
+      if (error) throw error;
+
       const normalizedMessages = messages.map(msg => ({
         ...msg,
-        text: msg.text || msg.content || '',
-        content: msg.content || msg.text || ''
+        text: msg.content || '', // توحيد الحقل ليعتمد على content
+        content: msg.content || ''
       }));
 
       return res.status(200).json(normalizedMessages);
+    } catch (e) {
+      return res.status(500).json({ error: e.message });
     }
+  }
 
-    // --- إرسال رسالة (POST) ---
-    if (req.method === 'POST') {
-      const body = await parseRequestBody(req);
-      const { sender_id, text, content, media_url, media_type } = body;
+  // --- إرسال رسالة (POST) ---
+  if (req.method === 'POST') {
+    try {
+      const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+      const { sender_id, receiver_id, content, media_url, media_type } = body;
 
-      if (!sender_id) return res.status(400).json({ error: 'معرف المرسل مفقود' });
-
-      // صياغة النص المدخل أياً كان المسمى القادم من الفرونت إند
-      const messageText = text || content || '';
-
-      const { data: newMessage, error } = await supabaseServer
+      const { data, error } = await supabaseServer
         .from('messages')
         .insert({
           sender_id,
-          text: messageText,    // يغذي حقل text في الداتابيز إن وجد
-          content: messageText, // يغذي حقل content في الداتابيز إن وجد (احتياطياً)
-          media_url: media_url || null,
-          media_type: media_type || null
+          receiver_id,
+          content: content || '', // استخدام حقل content الأساسي
+          media_url,
+          media_type
         })
         .select()
         .single();
 
-      if (error) return res.status(400).json({ error: error.message });
-
-      // تطبيع وتوحيد الحقول للرسالة المرجعة فوراً للفرونت إند
-      const normalizedNewMessage = {
-        ...newMessage,
-        text: newMessage.text || newMessage.content || messageText,
-        content: newMessage.content || newMessage.text || messageText
-      };
-
-      return res.status(200).json(normalizedNewMessage);
+      if (error) throw error;
+      return res.status(200).json(data);
+    } catch (e) {
+      return res.status(500).json({ error: e.message });
     }
-
-    return res.status(405).json({ error: 'الطريقة غير مسموح بها' });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
   }
-};
+}
