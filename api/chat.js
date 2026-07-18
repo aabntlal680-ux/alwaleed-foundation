@@ -34,9 +34,19 @@ export default async function handler(req, res) {
 
   const isAdmin = myProfile.role === 'admin' || myProfile.email === ADMIN_EMAIL;
 
+  // كل طلب مُصادَق عليه يُحدّث "آخر ظهور" لصاحبه — هذا ما يغذي خاصية آخر ظهور/متصل الآن
+  supabaseServer.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', userId).then(() => {});
+
   // --- جلب الرسائل (GET) ---
   if (req.method === 'GET') {
     try {
+      // أي رسالة وصلت لهذا المستخدم وكانت لا تزال 'sent' تصبح 'delivered' بمجرد أن يجلبها
+      await supabaseServer
+        .from('messages')
+        .update({ status: 'delivered' })
+        .eq('receiver_id', userId)
+        .eq('status', 'sent');
+
       let query = supabaseServer.from('messages').select('*').order('created_at', { ascending: true });
 
       if (!isAdmin) {
@@ -51,9 +61,9 @@ export default async function handler(req, res) {
         return res.status(200).json(messages || []);
       }
 
-      // للأدمن فقط: نُرفق البريد الإلكتروني لكل طرف حتى تُبنى قائمة المحادثات
-      // بأسماء/إيميلات حقيقية بدل معرّفات مبتورة، دون الحاجة لاستدعاء إضافي من الواجهة
-      const { data: profiles } = await supabaseServer.from('profiles').select('id, email, full_name');
+      // للأدمن فقط: نُرفق البريد الإلكتروني وآخر ظهور لكل طرف حتى تُبنى قائمة المحادثات
+      // بأسماء/إيميلات حقيقية وحالة "متصل/آخر ظهور"، دون استدعاء إضافي من الواجهة
+      const { data: profiles } = await supabaseServer.from('profiles').select('id, email, full_name, last_seen');
       const profileMap = {};
       (profiles || []).forEach(p => { profileMap[p.id] = p; });
 
@@ -63,7 +73,32 @@ export default async function handler(req, res) {
         receiver_email: profileMap[m.receiver_id]?.email || null
       }));
 
-      return res.status(200).json(enriched);
+      return res.status(200).json({ messages: enriched, profiles: profileMap });
+    } catch (e) {
+      return res.status(500).json({ error: e.message });
+    }
+  }
+
+  // --- تعليم رسائل كمقروءة (PATCH) ---
+  // يُستدعى: من المستخدم العادي بدون otherUserId (كل الوارد إليه من الأدمن)،
+  // أو من الأدمن مع otherUserId = هوية العميل المفتوحة محادثته حالياً (لتحديد النطاق بدقة)
+  if (req.method === 'PATCH') {
+    try {
+      const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+      const { otherUserId } = body;
+
+      let query = supabaseServer
+        .from('messages')
+        .update({ status: 'read' })
+        .eq('receiver_id', userId)
+        .neq('status', 'read');
+
+      if (otherUserId) query = query.eq('sender_id', otherUserId);
+
+      const { error } = await query;
+      if (error) throw error;
+
+      return res.status(200).json({ success: true });
     } catch (e) {
       return res.status(500).json({ error: e.message });
     }
