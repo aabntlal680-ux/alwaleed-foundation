@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseServer = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 // إيميل احتياطي للأدمن (يُستخدم فقط إذا لم يكن role='admin' مضبوطاً في جدول profiles)
-const ADMIN_EMAIL = "almgawell@gmail.com";
+const ADMIN_EMAIL = "aabntlal680@gmail.com";
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', true);
