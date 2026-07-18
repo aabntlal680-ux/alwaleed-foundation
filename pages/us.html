@@ -469,8 +469,7 @@
 
    <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  // تم تضمين query, where, getDocs للفحص المزدوج داخل قاعدة البيانات
-  import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyC1-J4dSTmxUnz5d7dvq9XWrRHf_Lr511M",
@@ -486,99 +485,91 @@
 
   const allCountries = ["أفغانستان", "ألبانيا", "الجزائر", "أندورا", "أنغولا", "أنتيغوا وباربودا", "الأرجنتين", "أرمينيا", "أستراليا", "النمسا", "أذربيجان", "الباهاما", "البحرين", "بنجلاديش", "باربادوس", "بيلاروسيا", "بلجيكا", "بليز", "بنين", "بوتان", "بوليفيا", "البوسنة والهرسك", "بوتسوانا", "البرازيل", "بروناي", "بلغاريا", "بوركينا فاسو", "بوروندي", "كابو فيردي", "كمبوديا", "الكاميرون", "كندا", "جمهورية أفريقيا الوسطى", "تشاد", "تشيلي", "الصين", "كولومبيا", "جزر القمر", "الكونغو", "كوستاريكا", "كرواتيا", "كوبا", "قبرص", "التشيك", "الدنمارك", "جيبوتي", "دومينيكا", "جمهورية الدومينيكان", "تيمور الشرقية", "الإكوادور", "مصر", "السلفادور", "غينيا الاستوائية", "إريتريا", "إستونيا", "إثيوبيا", "فيجي", "فنلندا", "فرنسا", "الغابون", "غامبيا", "جورجيا", "ألمانيا", "غانا", "اليونان", "غرينادا", "غواتيمالا", "غينيا", "غينيا بيساو", "غويانا", "هايتي", "هندوراس", "المجر", "آيسلندا", "الهند", "إندونيسيا", "إيران", "العراق", "أيرلندا", "إيطاليا", "جاميكا", "اليابان", "الأردن", "كازاخستان", "كينيا", "كيريباتي", "كوريا الشمالية", "كوريا الجنوبية", "الكويت", "قرغيزستان", "لاوس", "لاتفيا", "لبنان", "ليسوتو", "ليبيريا", "ليبيا", "ليختنشتاين", "ليتوانيا", "لوكسمبورغ", "مدغشقر", "ملاوي", "ماليزيا", "المالديف", "مالي", "مالطا", "جزر مارشال", "موريتانيا", "موريشيوس", "المكسيك", "ميكرونيزيا", "مولدوفا", "موناكو", "منغوليا", "الجبل الأسود", "المغرب", "موزمبيق", "ميانمار", "ناميبيا", "ناورو", "نيبال", "هولندا", "نيوزيلندا", "نيكاراغوا", "النيجر", "نيجيريا", "النرويج", "عمان", "باكستان", "بالاو", "فلسطين", "بنما", "بابوا غينيا الجديدة", "باراغواي", "بيرو", "الفلبين", "بولندا", "البرتغال", "قطر", "رومانيا", "روسيا", "رواندا", "سانت كيتس ونيفيس", "سانت لوسيا", "سانت فينسنت والغرينادين", "ساموا", "سان مارينو", "ساو تومي وبرينسيب", "السعودية", "السنغال", "صربيا", "سيشل", "سيراليون", "سنغافورة", "سلوفاكيا", "سلوفينيا", "جزر سليمان", "الصومال", "جنوب أفريقيا", "جنوب السودان", "إسبانيا", "سريلانكا", "السودان", "سورينام", "سوازيلاند", "السويد", "سويسرا", "سوريا", "تایوان", "طاجيكستان", "تنزانيا", "تايلاند", "توغو", "تونغا", "ترينيداد وتوباغو", "تونس", "تركيا", "تركمانستان", "توفالو", "أوغندا", "أوكرانيا", "الإمارات العربية المتحدة", "بريطانيا", "أمريكا", "أوروغواي", "أوزبكستان", "فانواتو", "الفاتيكان", "فنزويلا", "فيتنام", "اليمن", "زامبيا", "زيمبابوي"];
   const datalist = document.getElementById('countries-list');
-  if(datalist) {
-      allCountries.forEach(country => {
-          let option = document.createElement('option');
-          option.value = country;
-          datalist.appendChild(option);
-      });
+  if (datalist) {
+    allCountries.forEach(country => {
+      let option = document.createElement('option');
+      option.value = country;
+      datalist.appendChild(option);
+    });
   }
 
   const sendBtn = document.getElementById('sendBtn');
   if (sendBtn) {
-    sendBtn.onclick = async function() {
-        const adminPhone = "966567232680";
-        
-        const name = document.getElementById('name').value.trim();
-        const phone = document.getElementById('phone').value.trim();
-        const location = document.getElementById('location').value; 
-        const type = document.getElementById('type').value;         
-        const notes = document.getElementById('notes').value;       
-        const dateISO = new Date().toISOString(); 
+    sendBtn.onclick = async function () {
+      const adminPhone = "966567232680";
 
-        if (!name || !phone || !location || !type || !notes) {
-            alert("يرجى إكمال جميع الحقول.");
-            return;
+      const name = document.getElementById('name').value.trim();
+      const phoneRaw = document.getElementById('phone').value.trim();
+      const location = document.getElementById('location').value;
+      const type = document.getElementById('type').value;
+      const notes = document.getElementById('notes').value;
+      const dateISO = new Date().toISOString();
+
+      if (!name || !phoneRaw || !location || !type || !notes) {
+        alert("يرجى إكمال جميع الحقول.");
+        return;
+      }
+
+      // معرّف مستند حتمي مبني على رقم الهاتف (أرقام فقط)، هذا هو ما يمنع التكرار
+      // على مستوى قاعدة البيانات نفسها عبر قاعدة !exists() بدل استعلام list المفتوح
+      const phoneId = phoneRaw.replace(/[^0-9]/g, '');
+      if (!phoneId) {
+        alert("يرجى إدخال رقم جوال صالح.");
+        return;
+      }
+
+      // فحص محلي أول لمنع إعادة الإرسال الفوري من نفس الجهاز (تجربة استخدام أسرع فقط،
+      // وليس الحماية الفعلية — الحماية الحقيقية من قواعد Firestore نفسها)
+      if (localStorage.getItem('hasRequestedHelp')) {
+        alert("عذراً، لقد قمت بتقديم طلب مساعدة مسبقاً من هذا الجهاز.");
+        return;
+      }
+
+      try {
+        sendBtn.disabled = true;
+        sendBtn.innerText = "جاري الحفظ...";
+
+        // setDoc بدون { merge: true } يفشل تلقائياً إن كانت القاعدة تمنع الكتابة فوق مستند موجود،
+        // وقاعدة الأمان تحدد ذلك عبر exists(...) — فلا حاجة لأي قراءة/استعلام من المتصفح إطلاقاً
+        await setDoc(doc(db, "us", phoneId), {
+          name: name,
+          phone: phoneRaw,
+          location: location,
+          type: type,
+          notes: notes,
+          date: dateISO
+        });
+
+        localStorage.setItem('hasRequestedHelp', 'true');
+
+        let message = "📌 *طلب مساعدة جديد - مؤسسة الوليد* 📌\n\n";
+        message += "• *الاسم:* " + name + "\n";
+        message += "• *الهاتف:* " + phoneRaw + "\n";
+        message += "• *الدولة:* " + location + "\n";
+        message += "• *نوع المساعدة:* " + type + "\n";
+        message += "• *التفاصيل:* " + notes + "\n\n";
+        message += "🪪 *أرفق صورة الهوية بعد رفع البيانات* 🪪";
+
+        window.location.href = `https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`;
+
+      } catch (error) {
+        console.error("خطأ أثناء الحفظ:", error);
+
+        if (error.code === 'permission-denied') {
+          // في هذا التصميم، permission-denied عند الكتابة يعني تحديداً أن رقم الهاتف مسجل مسبقاً
+          alert("رقم الجوال هذا مسجل لدينا بالفعل في طلب مساعدة سابق.");
+        } else {
+          alert("حدث خطأ في الاتصال، ولكن سيتم توجيهك للواتساب الآن.");
+          window.location.href = `https://wa.me/${adminPhone}?text=Error_In_Saving_Help_Request`;
         }
-
-        // 1. الفحص الأول: حظر محلي عبر المتصفح لمنع التكرار الفوري من نفس الجهاز
-        if (localStorage.getItem('hasRequestedHelp')) {
-            alert("عذراً، لقد قمت بتقديم طلب مساعدة مسبقاً من هذا الجهاز.");
-            return;
-        }
-
-        try {
-            sendBtn.disabled = true;
-            sendBtn.innerText = "جاري التحقق الحماية...";
-
-            // 2. الفحص الثاني: فحص Firestore للتأكد من عدم وجود الاسم مسبقاً في مجموعة "us"
-            const nameQuery = query(collection(db, "us"), where("name", "==", name));
-            const nameSnapshot = await getDocs(nameQuery);
-
-            if (!nameSnapshot.empty) {
-                alert("هذا الاسم مسجل لدينا بالفعل في طلب مساعدة سابق.");
-                sendBtn.disabled = false;
-                sendBtn.innerText = "إرسال الطلب عبر واتساب";
-                return;
-            }
-
-            // 3. الفحص الثالث: فحص Firestore للتأكد من عدم وجود رقم الهاتف مسبقاً
-            const phoneQuery = query(collection(db, "us"), where("phone", "==", phone));
-            const phoneSnapshot = await getDocs(phoneQuery);
-
-            if (!phoneSnapshot.empty) {
-                alert("رقم الجوال هذا مسجل لدينا بالفعل في طلب مساعدة سابق.");
-                sendBtn.disabled = false;
-                sendBtn.innerText = "إرسال الطلب عبر واتساب";
-                return;
-            }
-
-            sendBtn.innerText = "جاري الحفظ...";
-
-            // 4. حفظ البيانات بعد اجتياز الفحوصات الأمنية
-            await addDoc(collection(db, "us"), {
-                name: name,
-                phone: phone,
-                location: location,
-                type: type,
-                notes: notes,
-                date: dateISO
-            });
-
-            // 5. حفظ علامة الإرسال في المتصفح لمنع إعادة الإرسال مجدداً
-            localStorage.setItem('hasRequestedHelp', 'true');
-
-            let message = "📌 *طلب مساعدة جديد - مؤسسة الوليد* 📌\n\n";
-            message += "• *الاسم:* " + name + "\n";
-            message += "• *الهاتف:* " + phone + "\n";
-            message += "• *الدولة:* " + location + "\n";
-            message += "• *نوع المساعدة:* " + type + "\n";
-            message += "• *التفاصيل:* " + notes + "\n\n";
-            message += "🪪 *أرفق صورة الهوية بعد رفع البيانات* 🪪";
-
-            window.location.href = `https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`;
-
-        } catch (error) {
-            console.error("خطأ أثناء الحفظ:", error);
-            alert("حدث خطأ في الاتصال، ولكن سيتم توجيهك للواتساب الآن.");
-            window.location.href = `https://wa.me/${adminPhone}?text=Error_In_Saving_Help_Request`;
-        } finally {
-            sendBtn.disabled = false;
-            sendBtn.innerText = "إرسال الطلب عبر واتساب";
-        }
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.innerText = "إرسال الطلب عبر واتساب";
+      }
     };
   }
 </script>
+
     
     <script>
     document.addEventListener("DOMContentLoaded", function() {
