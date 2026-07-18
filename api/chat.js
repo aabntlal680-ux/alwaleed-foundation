@@ -7,10 +7,10 @@ const ADMIN_EMAIL = "almgawell@gmail.com";
 
 // روابط أزرار الرد التلقائي — استبدل القيم بالروابط الفعلية لموقعك
 const LINKS = {
-  helpRequest: 'https://alwaleed-foundation.vercel.app/pages/us.html',      // صفحة طلب المساعدة
-  donate: 'https://alwaleed-foundation.vercel.app/pages/donate.html',                  // صفحة التبرع
-  viewAidRequests: 'https://alwaleed-foundation.vercel.app/pages/view-us.html',    // صفحة عرض المساعدات
-  viewDonations: 'hhttps://alwaleed-foundation.vercel.app/pages/cases.html'          // صفحة عرض التبرعات
+  helpRequest: 'https://alwaleed-foundation.vercel.app/pages/us.html',           // صفحة طلب المساعدة
+  donate: 'https://alwaleed-foundation.vercel.app/pages/donate.html',            // صفحة التبرع
+  viewAidRequests: 'https://alwaleed-foundation.vercel.app/pages/view-us.html',  // صفحة عرض المساعدات
+  viewDonations: 'https://alwaleed-foundation.vercel.app/pages/cases.html'       // صفحة عرض التبرعات
 };
 
 export default async function handler(req, res) {
