@@ -5,6 +5,14 @@ const supabaseServer = createClient(process.env.SUPABASE_URL, process.env.SUPABA
 // إيميل احتياطي للأدمن (يُستخدم فقط إذا لم يكن role='admin' مضبوطاً في جدول profiles)
 const ADMIN_EMAIL = "almgawell@gmail.com";
 
+// روابط أزرار الرد التلقائي — استبدل القيم بالروابط الفعلية لموقعك
+const LINKS = {
+  helpRequest: 'https://alwaleed-foundation.vercel.app/pages/us.html',      // صفحة طلب المساعدة
+  donate: 'https://alwaleed-foundation.vercel.app/pages/donate.html',                  // صفحة التبرع
+  viewAidRequests: 'https://alwaleed-foundation.vercel.app/pages/view-us.html',    // صفحة عرض المساعدات
+  viewDonations: 'hhttps://alwaleed-foundation.vercel.app/pages/cases.html'          // صفحة عرض التبرعات
+};
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -156,7 +164,8 @@ export default async function handler(req, res) {
           text: text || '',
           media_url: media_url || null,
           media_type: media_type || null,
-          status: 'sent'
+          status: 'sent',
+          is_html: false // رسائل المستخدمين تُعرض دائماً كنص عادي محمي من الحقن (escaped)
         })
         .select()
         .single();
@@ -165,12 +174,17 @@ export default async function handler(req, res) {
 
       // --- الرد التلقائي على أول رسالة من المستخدم ---
       if (isFirstMessageFromUser) {
-        const AUTO_REPLY_TEXT =
-`تحية طيبة من مؤسسة الوليد الإنسانية..
-يسعدنا جداً تواصلك معنا، فوجودك يعني لنا الكثير. نحن هنا لنعرف: كيف يمكننا أن نكون عوناً لك اليوم؟ هل تبحث عن طلب مساعدة، أم ترغب في تقديم دعم ومساندة؟
-يمكنك الاطلاع على طلبات المساعدة أو التبرع عبر موقعنا https://alwaleed-foundation.vercel.app 
-نحن بانتظار ردك لنعرف كيف يمكننا خدمتك.
-دمت للخير عنواناً.. فريق مؤسسة الوليد الإنسانية`;
+        const AUTO_REPLY_HTML =
+`تحية طيبة من مؤسسة الوليد الإنسانية..<br><br>
+يسعدنا جداً تواصلك معنا، فوجودك يعني لنا الكثير. نحن هنا لنعرف: كيف يمكننا أن نكون عوناً لك اليوم؟ هل تبحث عن طلب مساعدة، أم ترغب في تقديم دعم ومساندة؟<br><br>
+نحن بانتظار ردك لنعرف كيف يمكننا خدمتك.<br><br>
+دمت للخير عنواناً.. فريق مؤسسة الوليد الإنسانية
+<div class="msg-buttons">
+<a href="${LINKS.helpRequest}" class="msg-btn" target="_blank" rel="noopener">📝 طلب مساعدة</a>
+<a href="${LINKS.donate}" class="msg-btn" target="_blank" rel="noopener">💝 تبرع الآن</a>
+<a href="${LINKS.viewAidRequests}" class="msg-btn" target="_blank" rel="noopener">📋 عرض المساعدات</a>
+<a href="${LINKS.viewDonations}" class="msg-btn" target="_blank" rel="noopener">📊 عرض التبرعات</a>
+</div>`;
 
         // لا نُفشل طلب المستخدم لو تعثّر الرد التلقائي لأي سبب؛ فقط نسجّل الخطأ في اللوج
         const { error: autoErr } = await supabaseServer
@@ -178,10 +192,11 @@ export default async function handler(req, res) {
           .insert({
             sender_id: finalReceiverId, // هوية الأدمن (نفس المعرّف الذي تحقّقنا منه أعلاه)
             receiver_id: senderId,      // المستخدم الذي راسل للتو
-            text: AUTO_REPLY_TEXT,
+            text: AUTO_REPLY_HTML,
             media_url: null,
             media_type: null,
-            status: 'sent'
+            status: 'sent',
+            is_html: true // الرسالة الوحيدة الموثوقة كـ HTML لأنها من صياغة السيرفر نفسه، وليست مدخلة من مستخدم
           });
 
         if (autoErr) console.error('فشل إرسال الرد التلقائي:', autoErr.message);
