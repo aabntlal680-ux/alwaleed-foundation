@@ -53,6 +53,13 @@ function formatLastSeen(ts) {
   return `آخر ظهور ${formatDayLabel(ts)} الساعة ${formatTime(ts)}`;
 }
 
+// كل روابط الوسائط تمر عبر وسيط السيرفر بدل الاتصال المباشر بنطاق Supabase من المتصفح،
+// لأن بعض الشبكات/مزودي الإنترنت تحظر نطاق Supabase مباشرة (تظهر الصورة "مكسورة" عند إيقاف الـ VPN)
+function mediaProxyUrl(url) {
+  if (!url) return url;
+  return `/api/media?url=${encodeURIComponent(url)}`;
+}
+
 function formatDayLabel(ts) {
   const d = new Date(ts);
   const today = new Date();
@@ -384,6 +391,7 @@ function renderMessageBubble(msg, isOutgoing) {
   const row = document.createElement("div");
   row.className = `msg-row ${isOutgoing ? "out" : "in"}`;
   row.dataset.id = msg.id;
+  row.dataset.status = msg.status || "";
 
   const bubble = document.createElement("div");
   bubble.className = `bubble ${isOutgoing ? "out" : "in"}`;
@@ -391,15 +399,16 @@ function renderMessageBubble(msg, isOutgoing) {
   const actualMediaUrl = msg.media_url;
   const actualMediaType = msg.media_type;
   const messageText = msg.text || "";
+  const proxiedUrl = mediaProxyUrl(actualMediaUrl);
 
   let mediaHtml = "";
   if (actualMediaUrl) {
     if (actualMediaType === "image") {
-      mediaHtml = `<img src="${actualMediaUrl}" alt="صورة" class="previewable-img" style="max-width:100%; max-height:250px; border-radius:8px; display:block; margin-bottom:5px; cursor:pointer;" onclick="openImagePreview('${actualMediaUrl}')">`;
+      mediaHtml = `<img src="${proxiedUrl}" alt="صورة" class="previewable-img" style="max-width:100%; max-height:250px; border-radius:8px; display:block; margin-bottom:5px; cursor:pointer;" onclick="openImagePreview('${proxiedUrl}')">`;
     } else if (actualMediaType === "audio") {
-      mediaHtml = `<audio controls preload="metadata" src="${actualMediaUrl}" style="max-width:100%; display:block; margin-bottom:5px;"></audio>`;
+      mediaHtml = `<audio controls preload="metadata" src="${proxiedUrl}" style="max-width:100%; display:block; margin-bottom:5px;"></audio>`;
     } else {
-      mediaHtml = `<a href="${actualMediaUrl}" target="_blank" rel="noopener" style="display:block; margin-bottom:5px;">📎 فتح الملف</a>`;
+      mediaHtml = `<a href="${proxiedUrl}" target="_blank" rel="noopener" style="display:block; margin-bottom:5px;">📎 فتح الملف</a>`;
     }
   }
 
@@ -417,6 +426,23 @@ function renderMessageBubble(msg, isOutgoing) {
   return row;
 }
 
+// تحديث تكات الاستلام/القراءة على فقاعة موجودة بالفعل دون إعادة رسمها بالكامل
+// (يحافظ على تشغيل الصوت الجاري ولا يعيد بناء الصورة/الرابط)
+function updateBubbleStatus(container, msg) {
+  const row = container.querySelector(`.msg-row[data-id="${msg.id}"]`);
+  if (!row) return;
+  if (row.dataset.status === (msg.status || "")) return; // لا يوجد تغيير فعلي
+
+  const ticksEl = row.querySelector('.ticks');
+  if (ticksEl) {
+    const tickChar = msg.status === "read" ? "✓✓" : (msg.status === "delivered" ? "✓✓" : "✓");
+    const readClass = msg.status === "read" ? "read" : "";
+    ticksEl.textContent = tickChar;
+    ticksEl.className = `ticks ${readClass}`;
+  }
+  row.dataset.status = msg.status || "";
+}
+
 // إضافة الرسائل الجديدة فقط (Append) بدل مسح الحاوية بالكامل في كل تحديث،
 // حتى لا ينقطع تشغيل الرسائل الصوتية أثناء الـ Polling الدوري
 function appendNewMessages(container, messages) {
@@ -425,7 +451,17 @@ function appendNewMessages(container, messages) {
   const existingIds = new Set(
     Array.from(container.querySelectorAll('.msg-row')).map(r => r.dataset.id)
   );
-  const newMessages = messages.filter(m => !existingIds.has(String(m.id)));
+
+  const newMessages = [];
+  messages.forEach(msg => {
+    if (existingIds.has(String(msg.id))) {
+      // موجودة بالفعل: نحدّث فقط تكاتها إن تغيّرت حالتها (sent/delivered/read)
+      updateBubbleStatus(container, msg);
+    } else {
+      newMessages.push(msg);
+    }
+  });
+
   if (newMessages.length === 0) return;
 
   let lastDay = container.dataset.lastDay || null;
