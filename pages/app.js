@@ -412,7 +412,9 @@ function renderMessageBubble(msg, isOutgoing) {
     }
   }
 
-  const textHtml = messageText ? `<div class="text">${escapeHtml(messageText)}</div>` : "";
+  const textHtml = messageText
+    ? (msg.is_html ? `<div class="text rich-text">${messageText}</div>` : `<div class="text">${escapeHtml(messageText)}</div>`)
+    : "";
 
   let ticksHtml = "";
   if (isOutgoing) {
