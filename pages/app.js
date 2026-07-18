@@ -1,10 +1,9 @@
 // =====================================================================
-// تحديث دالة عرض الرسالة لتتوافق مع حقل 'text' في جدول messages
+// حالة عامة للتطبيق
 // =====================================================================
 
-function renderMessageBubble(msg, isOutgoing) {// ------------------------- حالة عامة للتطبيق -------------------------
 const state = {
-  currentUser: null,      // بيانات المستخدم المسجل دخوله 
+  currentUser: null,      // بيانات المستخدم المسجل دخوله
   currentProfile: null,   // صف profiles الخاص بالمستخدم الحالي
   adminProfile: null,     // (لواجهة المستخدم العادي) بيانات الأدمن الذي يراسله
   conversations: {},      // (للأدمن) خريطة userId -> { profile, lastMessage, unread, messages: [] }
@@ -72,7 +71,7 @@ async function apiFetch(endpoint, options = {}) {
   if (state.currentUser) {
     options.headers['x-user-id'] = state.currentUser.id;
   }
-  
+
   const response = await fetch(`/api/${endpoint}`, options);
   const result = await response.json();
   if (!response.ok) throw new Error(result.error || 'حدث خطأ في الاتصال بالسيرفر');
@@ -84,17 +83,17 @@ async function apiFetch(endpoint, options = {}) {
 // =====================================================================
 
 async function init() {
-  setupLightbox(); // تهيئة نافذة معاينة الصور
-  setupScrollListeners(); // تهيئة مراقبة التمرير العلوي
-  
+  setupLightbox();        // تهيئة نافذة معاينة الصور
+  setupScrollListeners();  // تهيئة مراقبة التمرير العلوي
+
   try {
     const savedUser = localStorage.getItem('chat_user');
     const savedProfile = localStorage.getItem('chat_profile');
-    
+
     if (savedUser && savedProfile) {
       state.currentUser = JSON.parse(savedUser);
       state.currentProfile = JSON.parse(savedProfile);
-      
+
       if (state.currentProfile.role === "admin") {
         await bootAdminInterface();
       } else {
@@ -108,7 +107,7 @@ async function init() {
   }
 }
 
-let authMode = "login"; 
+let authMode = "login";
 
 $("#toggle-mode-link").addEventListener("click", (e) => {
   e.preventDefault();
@@ -157,7 +156,7 @@ $("#login-form").addEventListener("submit", async (e) => {
 
     localStorage.setItem('chat_user', JSON.stringify(result.user));
     localStorage.setItem('chat_profile', JSON.stringify(result.profile));
-    
+
     state.currentUser = result.user;
     state.currentProfile = result.profile;
 
@@ -212,7 +211,7 @@ function mountInputBar(containerEl, onSend) {
   function sendText() {
     const val = textInput.value.trim();
     if (!val) return;
-    onSend({ text: val }); 
+    onSend({ text: val, media_url: null, media_type: null });
     textInput.value = "";
     emojiPanel.classList.add("hidden");
     state.userIsScrolledUp = false; // إجبار النزول لأسفل عند إرسال رسالة جديدة
@@ -222,7 +221,7 @@ function mountInputBar(containerEl, onSend) {
   fileInput.addEventListener("change", async () => {
     const file = fileInput.files[0];
     if (!file) return;
-    
+
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = async () => {
@@ -308,16 +307,15 @@ function stopRecording(containerEl, shouldSend, onSend) {
 }
 
 // =====================================================================
-// عرض الرسائل ومعاينة الصور (مشترك)
+// عرض الرسائل ومعاينة الصور (مشترك) — الشكل الجمالي الكامل للفقاعة محفوظ
 // =====================================================================
 
 function setupLightbox() {
-  // إنشاء عنصر الـ Lightbox ديناميكياً إذا لم يكن موجوداً بالـ HTML
   if ($("#image-lightbox")) return;
   const lb = document.createElement("div");
   lb.id = "image-lightbox";
   lb.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:99999; display:none; flex-direction:column; align-items:center; justify-content:center;";
-  
+
   lb.innerHTML = `
     <button id="close-lightbox-btn" style="position:absolute; top:20px; right:20px; background:#e74c3c; color:white; border:none; padding:10px 20px; font-size:16px; border-radius:5px; cursor:pointer; font-weight:bold;">✕ العودة للمحادثة</button>
     <img id="lightbox-img" src="" style="max-width:90%; max-height:80%; border-radius:8px; box-shadow:0 5px 15px rgba(0,0,0,0.5); object-fit:contain;">
@@ -339,22 +337,30 @@ function openImagePreview(url) {
 }
 
 function setupScrollListeners() {
-  // تتبع تمرير المستخدم لمنع النزول التلقائي المزعج
   const userContainer = $("#user-messages");
   const adminContainer = $("#admin-messages");
 
   const onScroll = (e) => {
     const el = e.target;
     // إذا كان البعد عن القاع أكبر من 150 بكسل، نعتبر أن المستخدم يصعد للأعلى لقراءة الرسائل
-    if (el.scrollHeight - el.scrollTop - el.clientHeight > 150) {
-      state.userIsScrolledUp = true;
-    } else {
-      state.userIsScrolledUp = false;
-    }
+    state.userIsScrolledUp = (el.scrollHeight - el.scrollTop - el.clientHeight > 150);
   };
 
   if (userContainer) userContainer.addEventListener("scroll", onScroll);
   if (adminContainer) adminContainer.addEventListener("scroll", onScroll);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function mediaPreviewLabel(mediaType) {
+  if (mediaType === "image") return "📷 صورة";
+  if (mediaType === "audio") return "🎤 رسالة صوتية";
+  if (mediaType === "file") return "📎 ملف";
+  return "";
 }
 
 function renderMessageBubble(msg, isOutgoing) {
@@ -365,27 +371,26 @@ function renderMessageBubble(msg, isOutgoing) {
   const bubble = document.createElement("div");
   bubble.className = `bubble ${isOutgoing ? "out" : "in"}`;
 
-  const actualMediaUrl = msg.media_url || msg.mediaUrl;
-  const actualMediaType = msg.media_type || msg.mediaType;
+  const actualMediaUrl = msg.media_url;
+  const actualMediaType = msg.media_type;
+  const messageText = msg.text || "";
 
   let mediaHtml = "";
   if (actualMediaUrl) {
     if (actualMediaType === "image") {
-      // إضافة خاصية النقر لتكبير وتكبير الصور بدقة عالية ومعاينتها بشكل خاص
       mediaHtml = `<img src="${actualMediaUrl}" alt="صورة" class="previewable-img" style="max-width:100%; max-height:250px; border-radius:8px; display:block; margin-bottom:5px; cursor:pointer;" onclick="openImagePreview('${actualMediaUrl}')">`;
     } else if (actualMediaType === "audio") {
-      mediaHtml = `<audio controls src="${actualMediaUrl}" style="max-width:100%; display:block; margin-bottom:5px;"></audio>`;
+      mediaHtml = `<audio controls preload="metadata" src="${actualMediaUrl}" style="max-width:100%; display:block; margin-bottom:5px;"></audio>`;
     } else {
       mediaHtml = `<a href="${actualMediaUrl}" target="_blank" rel="noopener" style="display:block; margin-bottom:5px;">📎 فتح الملف</a>`;
     }
   }
 
-  const messageText = msg.text || msg.content || "";
   const textHtml = messageText ? `<div class="text">${escapeHtml(messageText)}</div>` : "";
-  
+
   let ticksHtml = "";
   if (isOutgoing) {
-    const tickChar = msg.status === "sent" ? "✓" : "✓✓";
+    const tickChar = msg.status === "read" ? "✓✓" : (msg.status === "delivered" ? "✓✓" : "✓");
     const readClass = msg.status === "read" ? "read" : "";
     ticksHtml = `<span class="ticks ${readClass}">${tickChar}</span>`;
   }
@@ -395,17 +400,20 @@ function renderMessageBubble(msg, isOutgoing) {
   return row;
 }
 
-function escapeHtml(str) {
-  const div = document.createElement("div");
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-function appendMessagesWithDayDividers(container, messages) {
+// إضافة الرسائل الجديدة فقط (Append) بدل مسح الحاوية بالكامل في كل تحديث،
+// حتى لا ينقطع تشغيل الرسائل الصوتية أثناء الـ Polling الدوري
+function appendNewMessages(container, messages) {
   if (!messages || !Array.isArray(messages)) return;
-  container.innerHTML = "";
-  let lastDay = null;
-  messages.forEach(msg => {
+
+  const existingIds = new Set(
+    Array.from(container.querySelectorAll('.msg-row')).map(r => r.dataset.id)
+  );
+  const newMessages = messages.filter(m => !existingIds.has(String(m.id)));
+  if (newMessages.length === 0) return;
+
+  let lastDay = container.dataset.lastDay || null;
+
+  newMessages.forEach(msg => {
     const dayLabel = formatDayLabel(msg.created_at);
     if (dayLabel !== lastDay) {
       const divider = document.createElement("div");
@@ -414,14 +422,23 @@ function appendMessagesWithDayDividers(container, messages) {
       container.appendChild(divider);
       lastDay = dayLabel;
     }
-    const isOutgoing = msg.sender_id === state.currentUser.id;
+    const isOutgoing = msg.sender_id === state.currentUser?.id;
     container.appendChild(renderMessageBubble(msg, isOutgoing));
   });
 
-  // التمرير الذكي: لا نمرر للأسفل تلقائياً إذا كان المستخدم يقوم بالمراجعة بالأعلى لقراءة الرسائل السابقة
+  container.dataset.lastDay = lastDay;
+
+  // التمرير الذكي: ننزل للأسفل تلقائياً فقط إذا لم يكن المستخدم يراجع رسائل سابقة بالأعلى
   if (!state.userIsScrolledUp) {
     scrollToBottom(container);
   }
+}
+
+// إعادة رسم كاملة (تُستخدم فقط عند تبديل المحادثة نفسها في واجهة الأدمن)
+function renderFullConversation(container, messages) {
+  container.innerHTML = "";
+  container.dataset.lastDay = "";
+  appendNewMessages(container, messages);
 }
 
 function scrollToBottom(container) {
@@ -438,16 +455,17 @@ async function bootUserInterface() {
   mountInputBar($("#user-input-bar"), (payload) => sendUserMessage(payload));
 
   await loadUserMessages();
-  
+
   if (state.pollingInterval) clearInterval(state.pollingInterval);
   state.pollingInterval = setInterval(loadUserMessages, 3000);
 }
 
 async function loadUserMessages() {
   try {
-    const messages = await apiFetch('chat'); 
-    
-    const currentCount = $("#user-messages").querySelectorAll('.msg-row').length;
+    const messages = await apiFetch('chat');
+    const container = $("#user-messages");
+
+    const currentCount = container.querySelectorAll('.msg-row').length;
     if (currentCount > 0 && messages.length > currentCount) {
       const lastMsg = messages[messages.length - 1];
       if (lastMsg.sender_id !== state.currentUser.id && document.hidden) {
@@ -455,7 +473,7 @@ async function loadUserMessages() {
       }
     }
 
-    appendMessagesWithDayDividers($("#user-messages"), messages);
+    appendNewMessages(container, messages);
   } catch (err) {
     console.error(err);
   }
@@ -465,11 +483,10 @@ async function sendUserMessage(payload) {
   try {
     const data = await apiFetch('chat', {
       method: 'POST',
-      body: JSON.stringify({ sender_id: state.currentUser.id, ...payload })
+      body: JSON.stringify(payload) // { text, media_url, media_type } — المرسل يُحدَّد من الهيدر في السيرفر
     });
     state.userIsScrolledUp = false; // النزول لأسفل فور إرسال الرسالة
-    $("#user-messages").appendChild(renderMessageBubble(data, true));
-    scrollToBottom($("#user-messages"));
+    appendNewMessages($("#user-messages"), [data]);
   } catch (err) {
     alert(err.message);
   }
@@ -501,36 +518,37 @@ async function bootAdminInterface() {
 
 async function loadAllConversations() {
   try {
-    const messages = await apiFetch('chat');
-    
+    const messages = await apiFetch('chat'); // يعود مُرفقاً بـ sender_email / receiver_email للأدمن
+
     const convos = {};
     messages.forEach(msg => {
-      // آلية فرز دقيقة ومحسنة لتحديد هوية العميل المقابل للأدمن
       let otherId = msg.sender_id === state.currentUser.id ? msg.receiver_id : msg.sender_id;
-      
-      if (!otherId || otherId === state.currentUser.id) {
-        otherId = msg.sender_id;
-      }
-      
-      if (!otherId || otherId === state.currentUser.id) return; 
+      if (!otherId || otherId === state.currentUser.id) otherId = msg.sender_id;
+      if (!otherId || otherId === state.currentUser.id) return;
+
+      const otherEmail = (msg.sender_id === otherId ? msg.sender_email : msg.receiver_email)
+        || `مستخدم ${String(otherId).substring(0, 5)}`;
 
       if (!convos[otherId]) {
         convos[otherId] = {
-          profile: { id: otherId, email: `User_${otherId.substring(0,5)}` },
+          profile: { id: otherId, email: otherEmail },
           lastMessage: msg,
           unread: 0,
           messages: []
         };
       }
+      convos[otherId].profile.email = otherEmail;
       convos[otherId].messages.push(msg);
-      convos[otherId].lastMessage = msg;
+      if (new Date(msg.created_at) >= new Date(convos[otherId].lastMessage.created_at)) {
+        convos[otherId].lastMessage = msg;
+      }
     });
 
     state.conversations = convos;
     renderConversationList($("#conversation-search").value.trim().toLowerCase());
 
     if (state.selectedUserId && state.conversations[state.selectedUserId]) {
-      appendMessagesWithDayDividers($("#admin-messages"), state.conversations[state.selectedUserId].messages);
+      appendNewMessages($("#admin-messages"), state.conversations[state.selectedUserId].messages);
     }
   } catch (err) {
     console.error(err);
@@ -552,10 +570,9 @@ function renderConversationList(filterText = "") {
   sorted.forEach(convo => {
     const item = document.createElement("div");
     item.className = "conversation-item" + (convo.profile.id === state.selectedUserId ? " selected" : "");
-    
-    const messageText = convo.lastMessage.text || convo.lastMessage.content;
+
     const lastMsgPreview = convo.lastMessage
-      ? (messageText || mediaPreviewLabel(convo.lastMessage.media_type || convo.lastMessage.mediaType))
+      ? (convo.lastMessage.text || mediaPreviewLabel(convo.lastMessage.media_type))
       : "لا توجد رسائل بعد";
     const lastTime = convo.lastMessage ? formatTime(convo.lastMessage.created_at) : "";
 
@@ -577,16 +594,9 @@ function renderConversationList(filterText = "") {
   });
 }
 
-function mediaPreviewLabel(mediaType) {
-  if (mediaType === "image") return "📷 صورة";
-  if (mediaType === "audio") return "🎤 رسالة صوتية";
-  if (mediaType === "file") return "📎 ملف";
-  return "";
-}
-
 async function selectConversation(userId) {
+  const isNewConversation = state.selectedUserId !== userId;
   state.selectedUserId = userId;
-  state.userIsScrolledUp = false; // إعادة ضبط التمرير التلقائي عند فتح محادثة جديدة لقراءتها من البداية
   const convo = state.conversations[userId];
   if (!convo) return;
 
@@ -598,25 +608,32 @@ async function selectConversation(userId) {
   $("#admin-chat-avatar").textContent = convo.profile.email[0].toUpperCase();
   $("#admin-chat-status").textContent = convo.profile.email;
 
-  appendMessagesWithDayDividers($("#admin-messages"), convo.messages);
+  if (isNewConversation) {
+    // نعيد الرسم بالكامل فقط عند الانتقال لمحادثة مختلفة، ونبدأ من القاع لقراءتها من الأحدث
+    state.userIsScrolledUp = false;
+    renderFullConversation($("#admin-messages"), convo.messages);
+  }
+
   mountInputBar($("#admin-input-bar"), (payload) => sendAdminMessage(userId, payload));
+  renderConversationList($("#conversation-search").value.trim().toLowerCase());
 }
 
 async function sendAdminMessage(receiverId, payload) {
   try {
     const data = await apiFetch('chat', {
       method: 'POST',
-      body: JSON.stringify({ sender_id: state.currentUser.id, receiver_id: receiverId, ...payload })
+      body: JSON.stringify({ receiver_id: receiverId, ...payload })
     });
     state.userIsScrolledUp = false;
-    if(!state.conversations[receiverId]) {
-       state.conversations[receiverId] = { messages: [] };
+
+    if (!state.conversations[receiverId]) {
+      state.conversations[receiverId] = { profile: { id: receiverId, email: data.receiver_email || receiverId }, messages: [], unread: 0 };
     }
     state.conversations[receiverId].messages.push(data);
     state.conversations[receiverId].lastMessage = data;
-    $("#admin-messages").appendChild(renderMessageBubble(data, true));
-    scrollToBottom($("#admin-messages"));
-    renderConversationList();
+
+    appendNewMessages($("#admin-messages"), [data]);
+    renderConversationList($("#conversation-search").value.trim().toLowerCase());
   } catch (err) {
     alert(err.message);
   }
@@ -624,72 +641,3 @@ async function sendAdminMessage(receiverId, payload) {
 
 // بدء تشغيل النظام
 init();
-
-  const row = document.createElement("div");
-  row.className = `msg-row ${isOutgoing ? "out" : "in"}`;
-  row.dataset.id = msg.id;
-
-  const bubble = document.createElement("div");
-  bubble.className = `bubble ${isOutgoing ? "out" : "in"}`;
-
-  // مطابقة أسماء الحقول حسب مخطط قاعدة البيانات لديك
-  const actualMediaUrl = msg.media_url; 
-  const actualMediaType = msg.media_type;
-  const messageText = msg.text || ""; // استخدام حقل 'text' مباشرة
-
-  let mediaHtml = "";
-  if (actualMediaUrl) {
-    if (actualMediaType === "image") {
-      mediaHtml = `<img src="${actualMediaUrl}" class="previewable-img" onclick="openImagePreview('${actualMediaUrl}')" style="max-width:100%; border-radius:8px; cursor:pointer;">`;
-    } else if (actualMediaType === "audio") {
-      // preload="metadata" يمنع إعادة التحميل ويحافظ على استقرار الصوت
-      mediaHtml = `<audio controls preload="metadata" src="${actualMediaUrl}" style="max-width:100%; display:block;"></audio>`;
-    }
-  }
-
-  bubble.innerHTML = `${mediaHtml}${messageText ? `<div class="text">${escapeHtml(messageText)}</div>` : ""}<div class="meta"><span class="time">${formatTime(msg.created_at)}</span></div>`;
-  row.appendChild(bubble);
-  return row;
-}
-
-// =====================================================================
-// تحديث دالة الإضافة الذكية (تمنع إعادة رسم الشاشة وانقطاع الصوت)
-// =====================================================================
-
-function appendMessagesWithDayDividers(container, messages) {
-  if (!messages || !Array.isArray(messages)) return;
-  
-  const existingIds = Array.from(container.querySelectorAll('.msg-row')).map(r => r.dataset.id);
-  const newMessages = messages.filter(m => !existingIds.includes(m.id.toString()));
-
-  // لا نقوم بمسح innerHTML، فقط نضيف الجديد، مما يمنع انقطاع الصوت!
-  newMessages.forEach(msg => {
-    const isOutgoing = msg.sender_id === state.currentUser?.id;
-    container.appendChild(renderMessageBubble(msg, isOutgoing));
-  });
-
-  if (!state.userIsScrolledUp && newMessages.length > 0) {
-    scrollToBottom(container);
-  }
-}
-
-// =====================================================================
-// تحديث دوال الإرسال لتتوافق مع حقل 'text'
-// =====================================================================
-
-async function sendUserMessage(payload) {
-  try {
-    const data = await apiFetch('chat', {
-      method: 'POST',
-      body: JSON.stringify({ 
-        sender_id: state.currentUser.id, 
-        text: payload.text, // التوافق مع حقل text
-        media_url: payload.media_url, 
-        media_type: payload.media_type 
-      })
-    });
-    state.userIsScrolledUp = false;
-    $("#user-messages").appendChild(renderMessageBubble(data, true));
-    scrollToBottom($("#user-messages"));
-  } catch (err) { alert(err.message); }
-}
