@@ -6,8 +6,15 @@ const supabaseServer = createClient(process.env.SUPABASE_URL, process.env.SUPABA
 const ADMIN_EMAIL = "almgawell@gmail.com"; 
 
 export default async function handler(req, res) {
+  // إذا كان الطلب خاصاً بتسجيل الدخول أو التسجيل، اسمح له بالمرور
+  if (req.url.includes('/auth') || req.method === 'OPTIONS') {
+    return; // انتقل لمعالجة Auth في ملفها الخاص
+  }
+
+  // التحقق من الهوية فقط للطلبات الأخرى
   const userId = req.headers['x-user-id'];
   if (!userId) return res.status(401).json({ error: 'غير مصرح' });
+
 
   // --- جلب الرسائل (GET) ---
   if (req.method === 'GET') {
