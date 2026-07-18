@@ -248,27 +248,37 @@ input:focus{ outline: 2px solid var(--wa-teal); outline-offset: 1px; }
 .back-btn{ display:none; }
 /* أزرار الرد التلقائي داخل فقاعة الرسالة (msg-buttons) */
 
+/* أزرار الرد التلقائي داخل فقاعة الرسالة (msg-buttons) */
+
 .rich-text {
   line-height: 1.6;
 }
 
 .msg-buttons {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* شبكة ثابتة 2×2 لضمان تساوي الأحجام */
   gap: 8px;
   margin-top: 12px;
 }
 
 .msg-btn {
-  display: inline-block;
-  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;   /* النص في المنتصف أفقياً */
+  text-align: center;        /* النص في المنتصف حتى لو التف لسطرين */
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 40px;
+  padding: 8px 6px;
   border-radius: 20px;
-  background: #25d366;         /* غيّرها للون هوية مؤسستك إن أردت */
+  background: #25d366;       /* غيّرها للون هوية مؤسستك إن أردت */
   color: #ffffff !important;
   text-decoration: none;
   font-size: 13px;
   font-weight: 600;
-  white-space: nowrap;
+  line-height: 1.3;
+  white-space: normal;       /* يسمح بالتفاف النص الطويل بدل تمدد الزر */
+  word-break: break-word;
   transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
@@ -284,13 +294,10 @@ input:focus{ outline: 2px solid var(--wa-teal); outline-offset: 1px; }
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
-/* على الشاشات الصغيرة جداً، اجعل كل زر يأخذ عرض الفقاعة كاملاً لسهولة اللمس */
-@media (max-width: 360px) {
+/* على الشاشات الضيقة جداً، رتّب الأزرار عموداً واحداً بدل شبكة 2×2 */
+@media (max-width: 320px) {
   .msg-buttons {
-    flex-direction: column;
-  }
-  .msg-btn {
-    text-align: center;
+    grid-template-columns: 1fr;
   }
 }
 
