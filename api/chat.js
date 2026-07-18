@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseServer = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 // إيميل الأدمن للتحكم في الصلاحيات
-const ADMIN_EMAIL = "aabntlal680@gmail.com"; 
+const ADMIN_EMAIL = "almgawell@gmail.com"; 
 
 export default async function handler(req, res) {
   const userId = req.headers['x-user-id'];
