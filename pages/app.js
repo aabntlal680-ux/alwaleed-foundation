@@ -36,6 +36,23 @@ function formatTime(ts) {
   return d.toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" });
 }
 
+function formatLastSeen(ts) {
+  if (!ts) return "";
+  const diffMs = Date.now() - new Date(ts).getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+
+  // فترة الـ Polling كل 3 ثوانٍ، لذا أي تحديث خلال آخر 20 ثانية يعني أنه متصل الآن فعلياً
+  if (diffMs < 20000) return "متصل الآن";
+  if (diffMin < 60) return `آخر ظهور قبل ${diffMin} دقيقة`;
+
+  const d = new Date(ts);
+  const today = new Date();
+  if (d.toDateString() === today.toDateString()) {
+    return `آخر ظهور اليوم الساعة ${formatTime(ts)}`;
+  }
+  return `آخر ظهور ${formatDayLabel(ts)} الساعة ${formatTime(ts)}`;
+}
+
 function formatDayLabel(ts) {
   const d = new Date(ts);
   const today = new Date();
@@ -474,6 +491,12 @@ async function loadUserMessages() {
     }
 
     appendNewMessages(container, messages);
+
+    // إذا كانت الصفحة مفتوحة أمام المستخدم، نُعلّم رسائل الأدمن الواردة كمقروءة (تكات زرقاء عند الأدمن)
+    const hasUnreadIncoming = messages.some(m => m.receiver_id === state.currentUser.id && m.status !== 'read');
+    if (hasUnreadIncoming && !document.hidden) {
+      apiFetch('chat', { method: 'PATCH', body: JSON.stringify({}) }).catch(() => {});
+    }
   } catch (err) {
     console.error(err);
   }
@@ -518,27 +541,36 @@ async function bootAdminInterface() {
 
 async function loadAllConversations() {
   try {
-    const messages = await apiFetch('chat'); // يعود مُرفقاً بـ sender_email / receiver_email للأدمن
+    // الأدمن يستقبل شكلاً مختلفاً: { messages, profiles } — راجع chat.js
+    const { messages, profiles } = await apiFetch('chat');
 
     const convos = {};
-    messages.forEach(msg => {
+    (messages || []).forEach(msg => {
       let otherId = msg.sender_id === state.currentUser.id ? msg.receiver_id : msg.sender_id;
       if (!otherId || otherId === state.currentUser.id) otherId = msg.sender_id;
       if (!otherId || otherId === state.currentUser.id) return;
 
       const otherEmail = (msg.sender_id === otherId ? msg.sender_email : msg.receiver_email)
         || `مستخدم ${String(otherId).substring(0, 5)}`;
+      const otherLastSeen = profiles?.[otherId]?.last_seen || null;
 
       if (!convos[otherId]) {
         convos[otherId] = {
-          profile: { id: otherId, email: otherEmail },
+          profile: { id: otherId, email: otherEmail, lastSeen: otherLastSeen },
           lastMessage: msg,
           unread: 0,
           messages: []
         };
       }
       convos[otherId].profile.email = otherEmail;
+      convos[otherId].profile.lastSeen = otherLastSeen;
       convos[otherId].messages.push(msg);
+
+      // رسالة واردة للأدمن من هذا العميل ولم تُقرأ بعد => تُحتسب ضمن العداد وتُظهر النقطة
+      if (msg.receiver_id === state.currentUser.id && msg.status !== 'read') {
+        convos[otherId].unread += 1;
+      }
+
       if (new Date(msg.created_at) >= new Date(convos[otherId].lastMessage.created_at)) {
         convos[otherId].lastMessage = msg;
       }
@@ -549,6 +581,8 @@ async function loadAllConversations() {
 
     if (state.selectedUserId && state.conversations[state.selectedUserId]) {
       appendNewMessages($("#admin-messages"), state.conversations[state.selectedUserId].messages);
+      const openConvo = state.conversations[state.selectedUserId];
+      $("#admin-chat-status").textContent = formatLastSeen(openConvo.profile.lastSeen);
     }
   } catch (err) {
     console.error(err);
@@ -569,15 +603,22 @@ function renderConversationList(filterText = "") {
 
   sorted.forEach(convo => {
     const item = document.createElement("div");
-    item.className = "conversation-item" + (convo.profile.id === state.selectedUserId ? " selected" : "");
+    const hasUnread = convo.unread > 0;
+    item.className = "conversation-item"
+      + (convo.profile.id === state.selectedUserId ? " selected" : "")
+      + (hasUnread ? " has-unread" : ""); // فعّل عليها CSS لعرض نقطة/تظليل حسب تصميمك
 
     const lastMsgPreview = convo.lastMessage
       ? (convo.lastMessage.text || mediaPreviewLabel(convo.lastMessage.media_type))
       : "لا توجد رسائل بعد";
     const lastTime = convo.lastMessage ? formatTime(convo.lastMessage.created_at) : "";
+    const isOnline = convo.profile.lastSeen && (Date.now() - new Date(convo.profile.lastSeen).getTime() < 20000);
 
     item.innerHTML = `
-      <div class="avatar">${convo.profile.email[0].toUpperCase()}</div>
+      <div class="avatar">
+        ${convo.profile.email[0].toUpperCase()}
+        ${isOnline ? '<span class="online-dot" title="متصل الآن"></span>' : ""}
+      </div>
       <div class="conv-info">
         <div class="conv-top-row">
           <span class="conv-name">${escapeHtml(convo.profile.email)}</span>
@@ -585,7 +626,7 @@ function renderConversationList(filterText = "") {
         </div>
         <div class="conv-bottom-row">
           <span class="conv-last-msg">${escapeHtml(lastMsgPreview)}</span>
-          ${convo.unread > 0 ? `<span class="unread-badge">${convo.unread}</span>` : ""}
+          ${hasUnread ? `<span class="unread-badge">${convo.unread}</span>` : ""}
         </div>
       </div>
     `;
@@ -606,7 +647,7 @@ async function selectConversation(userId) {
 
   $("#admin-chat-name").textContent = convo.profile.email;
   $("#admin-chat-avatar").textContent = convo.profile.email[0].toUpperCase();
-  $("#admin-chat-status").textContent = convo.profile.email;
+  $("#admin-chat-status").textContent = formatLastSeen(convo.profile.lastSeen);
 
   if (isNewConversation) {
     // نعيد الرسم بالكامل فقط عند الانتقال لمحادثة مختلفة، ونبدأ من القاع لقراءتها من الأحدث
@@ -615,6 +656,13 @@ async function selectConversation(userId) {
   }
 
   mountInputBar($("#admin-input-bar"), (payload) => sendAdminMessage(userId, payload));
+
+  // تعليم رسائل هذا العميل كمقروءة فور فتح محادثته (تُصبح تكاته زرقاء + تختفي النقطة/العداد)
+  if (convo.unread > 0) {
+    convo.unread = 0;
+    apiFetch('chat', { method: 'PATCH', body: JSON.stringify({ otherUserId: userId }) }).catch(() => {});
+  }
+
   renderConversationList($("#conversation-search").value.trim().toLowerCase());
 }
 
