@@ -3,12 +3,12 @@
   "name": "معاََ من اجل الإنسانية",
   "icons": [
     {
-      "src": "ad.png",
+      "src": "images/icon.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "ad.png",
+      "src": "images/icon.png",
       "type": "image/png",
       "sizes": "512x512"
     }
