@@ -373,7 +373,8 @@
     }
     header#header, header.site-header {
         position: absolute;
-        top: 0; left: 0; right: 0; width: 100%;
+        box-sizing: border-box;
+        top: 0; left: 0; right: 0; width: 100%; max-width: 100%;
         height: auto; min-height: 0; max-height: none;
         margin: 0; padding: 10px 5%;
         display: flex; flex-direction: row;
@@ -400,6 +401,8 @@
 
     .hero {
         position: relative;
+        box-sizing: border-box;
+        max-width: 100%;
         padding-top: 100px;
         height: 100vh;
         width: 100%;
@@ -418,10 +421,10 @@
         background-position: center;
         z-index: -1;
         opacity: 0;
-        transition: opacity 1s ease-in-out, transform 6s ease-out;
-        transform: scale(1.1);
+        background-size: cover;
+        transition: opacity 1s ease-in-out;
     }
-    .hero-bg.active { opacity: 1; transform: scale(1); }
+    .hero-bg.active { opacity: 1; }
     .text-group {
         position: absolute;
         top: 50%; left: 50%;
@@ -493,9 +496,11 @@
     .whatsapp-float:hover { transform: scale(1.1) rotate(10deg); }
     @media (max-width: 600px) {
         .text-group h1 { font-size: 1.5rem; }
-        header#header nav ul, header.site-header nav ul { gap: 8px; }
-        header#header nav ul li a, header.site-header nav ul li a { font-size: 0.7rem; }
+        header#header, header.site-header { flex-wrap: wrap; justify-content: center; gap: 6px; padding: 8px 10px; }
+        header#header nav ul, header.site-header nav ul { gap: 6px; flex-wrap: wrap; justify-content: center; }
+        header#header nav ul li a, header.site-header nav ul li a { font-size: 0.68rem; }
     }
+    html, body { overflow-x: hidden; max-width: 100%; }
     /* ===== نهاية الأقسام الموحّدة ===== */
 </style>
 </head>
