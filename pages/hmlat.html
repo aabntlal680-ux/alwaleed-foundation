@@ -364,18 +364,148 @@
         }
         .whatsapp-float:hover { transform: scale(1.1) rotate(10deg); }
 
-    </style>
+    
+    /* ===== أقسام موحّدة (هيدر/هيرو/تذييل) منقولة من الصفحة الرئيسية ===== */
+    :root {
+        --primary-green: #008444;
+        --accent-purple: #7e57c2;
+        --whatsapp-color: #25D366;
+    }
+    header#header, header.site-header {
+        position: absolute;
+        top: 0; width: 100%; padding: 10px 5%;
+        display: flex; justify-content: space-between; align-items: center;
+        z-index: 100;
+        background: rgba(0, 0, 0, 0.7);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        transition: transform 0.3s ease, background 0.3s ease;
+    }
+    header#header .logo-container img, header.site-header .logo-container img {
+        height: 45px; width: auto; filter: brightness(1.2);
+    }
+    header#header nav ul, header.site-header nav ul {
+        display: flex; list-style: none; color: white; gap: 15px; margin: 0; padding: 0;
+        align-items: center;
+    }
+    header#header nav ul li a, header.site-header nav ul li a {
+        color: white; text-decoration: none; font-weight: bold; font-size: 0.8rem; transition: 0.3s;
+    }
+    header#header nav ul li a:hover, header.site-header nav ul li a:hover { color: var(--primary-green); }
+    header#header nav ul li i.fa-bars, header.site-header nav ul li i.fa-bars { color: green; cursor: pointer; }
+
+    .hero {
+        position: relative;
+        padding-top: 100px;
+        height: 100vh;
+        width: 100%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+    }
+    .hero-bg {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-size: cover;
+        background-position: center;
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 1s ease-in-out, transform 6s ease-out;
+        transform: scale(1.1);
+    }
+    .hero-bg.active { opacity: 1; transform: scale(1); }
+    .text-group {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        text-align: center;
+        z-index: 10;
+        margin: 0; padding: 0;
+        pointer-events: none;
+    }
+    .text-group h1 {
+        font-size: 2.2rem;
+        color: white;
+        margin: 10px 0;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.7);
+    }
+    .btn-main {
+        background-color: #006400 !important;
+        color: white !important;
+        border-radius: 30px;
+        font-weight: bold;
+        text-decoration: none;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        transition: 0.3s;
+        border: none;
+        cursor: pointer;
+        z-index: 100;
+        text-align: center;
+    }
+    .hero-content {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: auto;
+    }
+    .hero-content .btn-main {
+        width: auto;
+        padding: 15px 25px;
+        font-size: 1.1rem;
+    }
+    .btn-main:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    }
+    .whatsapp-float {
+        position: fixed;
+        bottom: 30px;
+        left: 40px;
+        background-color: var(--whatsapp-color);
+        color: #FFF;
+        border-radius: 50px;
+        text-align: center;
+        font-size: 30px;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+        z-index: 2000 !important;
+        width: 60px; height: 60px;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        text-decoration: none;
+        transition: transform 0.3s;
+    }
+    .whatsapp-float:hover { transform: scale(1.1) rotate(10deg); }
+    @media (max-width: 600px) {
+        .text-group h1 { font-size: 1.5rem; }
+        header#header nav ul, header.site-header nav ul { gap: 8px; }
+        header#header nav ul li a, header.site-header nav ul li a { font-size: 0.7rem; }
+    }
+    /* ===== نهاية الأقسام الموحّدة ===== */
+</style>
 </head>
 <body>
 
-    <header>
-        <div class="logo-container reveal">
-            <img src="images/ad.png" alt="logo">
+        <header id="header" class="site-header">
+        <div class="logo-container">
+            <img src="images/ad.png" alt="مؤسسة الوليد الإنسانية">
         </div>
         <nav>
             <ul>
-                <li><a href="/index.html">الرئيسية</a></li>
-                <li><a href="#" style="color: var(--primary-green);">مشاريعنا</a></li>
+                <li><a href="../index.html">الرئيسية</a></li>
+                <li><a href="hmlat.html">المشاريع</a></li>
+                <li><a href="cases.html">التبرعات</a></li>
+                <li><a href="view-us.html">المساعدات</a></li>
                 <li><a href="we.html">من_نحن</a></li>
                 <li><i class="fas fa-bars"></i></li>
             </ul>
@@ -383,8 +513,26 @@
     </header>
 
 
-    <section class="hero reveal">
-        <h1 style="color: green; text-shadow: 2px 2px 10px rgba(0,0,0,0.7); transform: translateY(150px);">مشاريعنا</h1>
+        <section class="hero">
+        <div class="hero-bg active" style="background-image: url('images/aa.jpg');"></div>
+        <div class="hero-bg" style="background-image: url('images/af.jpg');"></div>
+        <div class="hero-bg" style="background-image: url('images/ss.jpg');"></div>
+        <div class="hero-bg" style="background-image: url('images/sf.jpg');"></div>
+        <div class="hero-bg" style="background-image: url('images/sa.jpg');"></div>
+        <div class="hero-bg" style="background-image: url('images/sd.jpg');"></div>
+        <div class="hero-bg" style="background-image: url('images/sg.jpg');"></div>
+        <div class="hero-bg" style="background-image: url('images/sh.jpg');"></div>
+        <div class="hero-bg" style="background-image: url('images/sj.jpg');"></div>
+        <div class="text-group">
+            <h1 style="color: green;">نحن شركاء في سعي.</h1>
+            <h1 style="color: green;">الإنسانية لأجل عالم</h1>
+            <h1 style="color: green;">متكامل الفرص</h1>
+            <h1>معاً من أجل الإنسانية</h1>
+        </div>
+        <div class="hero-content">
+            <a href="us.html" class="btn-main" target="_self">تقديم طلب مساعدة</a>
+            <a href="donate.html" class="btn-main" target="_self">تبرع من خلال مؤسستنا</a>
+        </div>
     </section>
     
         <div style="height: 50px;"></div>
@@ -539,7 +687,7 @@
                 <a href="mailto:support@alwaleed.com" class="contact-item">
                     <i class="fas fa-envelope"></i> البريد الإلكتروني
                 </a>
-                <a href="https://wa.me/your-number" class="contact-item">
+                <a href="https://wa.me/966542123253" class="contact-item">
                     <i class="fab fa-whatsapp"></i> واتساب الدعم
                 </a>
             </div>
@@ -562,7 +710,7 @@
     </div>
 </footer>
 
-   <a href="/pages/index-ss.html" class="whatsapp-float"><i class="fab fa-whatsapp"></i></a>
+   <a href="https://new-mr55.vercel.app/" class="whatsapp-float"><i class="fab fa-whatsapp"></i></a>
 
     <!-- <div id="whatsappModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
     <div style="background: white; width: 90%; max-width: 400px; border-radius: 15px; overflow: hidden; font-family: sans-serif;">
@@ -574,7 +722,7 @@
             <button id="btn-main" style="width: 100%; background: #32CD32; color: white; border: 1px; padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer; align-items: center;"><a href="pages/donate.html" style="font-weight: bold;">طلب تبرع</a></button>
             
                <textarea id="userNote" rows="2" style="width: 100%; border: 1.5px solid #ddd; border-radius: 8px; padding: 12px; text-align: center; margin-top: 15px; direction: rtl;" placeholder="اكتب ملاحظتك هنا..."></textarea>
-            <button id="btn-main" style="width: 100%; background: #98FB98; color: blacke; border: none; padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer;"><a href="pages/index-ss.html">تواصل مع فريق الدعم</a></button>
+            <button id="btn-main" style="width: 100%; background: #98FB98; color: blacke; border: none; padding: 12px; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer;"><a href="https://new-mr55.vercel.app/">تواصل مع فريق الدعم</a></button>
             <button onclick="toggleWhatsAppModal()" style="width: 100%; background: #eee; color: #333; border: none; padding: 8px; border-radius: 8px; margin-top: 10px; cursor: pointer;">
                 إلغاء
             </button>
@@ -618,7 +766,7 @@
 //     function sendToWhatsApp() {
 //         const noteElement = document.getElementById('userNote');
 //         const note = noteElement.value.trim();
-//         const phoneNumber ="966567232680"; 
+//         const phoneNumber ="966542123253"; 
 
 //         if (note ==="") {
 //             alert("فضلاً اكتب الملاحظة أولاً");
@@ -642,5 +790,35 @@
     </script>
     
 
+
+    <script>
+    /* سلوك موحّد للهيدر والهيرو (منقول من الصفحة الرئيسية) */
+    (function () {
+        var slides = document.querySelectorAll('.hero-bg');
+        if (slides.length > 1) {
+            var cur = 0;
+            setInterval(function () {
+                slides[cur].classList.remove('active');
+                cur = (cur + 1) % slides.length;
+                slides[cur].classList.add('active');
+            }, 5000);
+        }
+        var header = document.getElementById('header');
+        var last = 0;
+        window.addEventListener('scroll', function () {
+            var st = window.pageYOffset || document.documentElement.scrollTop;
+            if (header) {
+                header.style.transform = (st > last) ? 'translateY(-100%)' : 'translateY(0)';
+                header.style.background = (st > 50) ? 'rgba(0,0,0,0.9)' : 'rgba(0,0,0,0.7)';
+            }
+            var tg = document.querySelector('.text-group');
+            if (tg) {
+                tg.style.transform = 'translate(-50%, calc(-50% + ' + (st * 0.5) + 'px))';
+                tg.style.opacity = 1 - (st / 1000);
+            }
+            last = st <= 0 ? 0 : st;
+        });
+    })();
+    </script>
 </body>
 </html>
