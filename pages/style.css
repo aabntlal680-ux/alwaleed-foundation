@@ -1,4 +1,4 @@
-/* ============ متغيرات الألوان (ألوان واتساب الأصلية) ============ */
+/* /* ============ متغيرات الألوان (ألوان واتساب الأصلية) ============ */
 :root{
   --wa-teal-dark: #075E54;
   --wa-teal: #008069;
@@ -318,4 +318,4 @@ input:focus{ outline: 2px solid var(--wa-teal); outline-offset: 1px; }
 
 @media (min-width: 769px){
   #admin-sidebar.mobile-hidden{ display:flex; }
-}
+} */
