@@ -521,15 +521,12 @@
 
 
         <section class="hero">
-        <div class="hero-bg active" style="background-image: url('images/aa.jpg');"></div>
-        <div class="hero-bg" style="background-image: url('images/af.jpg');"></div>
-        <div class="hero-bg" style="background-image: url('images/ss.jpg');"></div>
-        <div class="hero-bg" style="background-image: url('images/sf.jpg');"></div>
-        <div class="hero-bg" style="background-image: url('images/sa.jpg');"></div>
+        <div class="hero-bg active" style="background-image: url('images/dx.jpg');"></div>
+        <div class="hero-bg" style="background-image: url('images/qqr.jpg');"></div>
+        <div class="hero-bg" style="background-image: url('images/mmx.jpg');"></div>
+        <div class="hero-bg" style="background-image: url('images/mml.jpg');"></div>
         <div class="hero-bg" style="background-image: url('images/sd.jpg');"></div>
-        <div class="hero-bg" style="background-image: url('images/sg.jpg');"></div>
-        <div class="hero-bg" style="background-image: url('images/sh.jpg');"></div>
-        <div class="hero-bg" style="background-image: url('images/sj.jpg');"></div>
+        <div class="hero-bg" style="background-image: url('images/wwr.jpg');"></div>
         <div class="text-group">
             <h1 style="color: green;">مشاريع تصنع الأثر</h1>
             <h1 style="color: green;">وحملات إنسانية</h1>
@@ -801,15 +798,6 @@
     <script>
     /* سلوك موحّد للهيدر والهيرو (منقول من الصفحة الرئيسية) */
     (function () {
-        var slides = document.querySelectorAll('.hero-bg');
-        if (slides.length > 1) {
-            var cur = 0;
-            setInterval(function () {
-                slides[cur].classList.remove('active');
-                cur = (cur + 1) % slides.length;
-                slides[cur].classList.add('active');
-            }, 5000);
-        }
         var header = document.getElementById('header');
         var last = 0;
         window.addEventListener('scroll', function () {
@@ -831,5 +819,6 @@
     <script src="../js/translations.js"></script>
     <script src="../js/i18n.js"></script>
     <script src="../js/nav.js"></script>
+    <script src="../js/hero.js"></script>
 </body>
 </html>

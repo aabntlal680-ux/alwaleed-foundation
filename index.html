@@ -1656,19 +1656,6 @@
 </div> -->
 
     
-    <script>
-        const slides = document.querySelectorAll('.hero-bg');
-        let currentSlide = 0;
-        const slideInterval = 5000; // وقت العرض 5 ثواني
-
-        function nextSlide() {
-            slides[currentSlide].classList.remove('active');
-            currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].classList.add('active');
-        }
-
-        setInterval(nextSlide, slideInterval);
-    </script>
     
     <script>
     window.onscroll = function() {
@@ -1954,5 +1941,6 @@ setInterval(nextSlide, 3000);
     <script src="js/translations.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/nav.js"></script>
+    <script src="js/hero.js"></script>
 </body>
 </html>
