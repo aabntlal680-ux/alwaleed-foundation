@@ -95,6 +95,16 @@
 </head>
 <body>
 
+<button type="button" class="page-close-btn" data-i18n-skip aria-label="إغلاق" title="خروج"
+  onclick="if(window.history.length>1){window.history.back();}else{window.location.href='../index.html';}">&times;</button>
+<style>
+  .page-close-btn{position:fixed;top:18px;left:18px;z-index:4000;width:46px;height:46px;
+    display:flex;align-items:center;justify-content:center;border:none;border-radius:50%;
+    background:#0ea5e9;color:#fff;font-size:28px;line-height:1;cursor:pointer;
+    box-shadow:0 4px 14px rgba(0,0,0,.35);transition:background .25s,transform .2s;}
+  .page-close-btn:hover{background:#38bdf8;transform:scale(1.08) rotate(90deg);}
+</style>
+
 <div class="terms-container">
     <h1>شروط الاستخدام</h1>
     <p style="text-align: center;">أهلاً بكم في موقعنا. تسري هذه الشروط والأحكام على استخدامك للموقع وكافة الخدمات المرتبطة به. من خلال الوصول إلى هذا الموقع، فإنك توافق على الالتزام بهذه الشروط بالكامل.</p>
@@ -144,5 +154,6 @@
 
     <script src="../js/translations.js"></script>
     <script src="../js/i18n.js"></script>
+    <script src="../js/nav.js"></script>
 </body>
 </html>
